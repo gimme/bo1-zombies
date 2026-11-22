@@ -1,0 +1,55 @@
+name: Release
+
+# Builds the engine and packs it into the archive that zombies-hub servers download.
+#
+# Pushing a tag such as v2 publishes the archive as a GitHub release of that name:
+#
+#   git tag v2 && git push origin v2
+#
+# Running the workflow by hand builds the archive without releasing it. It is kept as a workflow artifact.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # the build ID is the last commit that changed the source, so the build needs the history
+          fetch-depth: 0
+
+      - name: Free disk space for the toolchain images
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+
+      - name: Build
+        # The toolchain images are built first, from downloads and under Wine, which fails now and then.
+        # A second try reuses what the first one built.
+        run: make build || make build
+
+      - name: Package
+        id: package
+        run: |
+          docker/package.sh ${{ github.ref_type == 'tag' && github.ref_name || '' }} | tee package.log
+          echo "sha256=$(sed -n 's/^sha256: //p' package.log)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bo1-zombies
+          path: build/bo1-zombies-*.tar.gz
+          if-no-files-found: error
+
+      - name: Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" build/bo1-zombies-*.tar.gz --title "$GITHUB_REF_NAME" \
+            --notes "Engine build for zombies-hub. SHA-256 of the archive: \`${{ steps.package.outputs.sha256 }}\`"

@@ -1,0 +1,14 @@
+# build output
+/build/
+# the game files (Play.bat, tools/)
+/game/
+# Visual Studio and its CMake integration
+/.vs/
+/out/
+/CMakeUserPresets.json
+*.user
+*.suo
+# editors and tools
+/.vscode/
+node_modules/
+__pycache__/

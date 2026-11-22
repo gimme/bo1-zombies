@@ -1,0 +1,576 @@
+lang	kind	name	calls	port	mp	sp	triage	review	note
+gsc	function	isdefined	8626	GScr_IsDefined	0083c860	007efe70	same		
+csc	cfunction	isdefined	1352	CScr_IsDefined	007e4ff0	00783de0	same		
+gsc	function	precachemodel	1226	Scr_PrecacheModel	00845ae0	007fa850	helper	same	SP's body is MP's but for the error text, and SP's G_ModelIndex only adds a model-list print after the 512-model overflow Com_Error; the port skips its own extra default-asset check on an...
+gsc	function	loadfx	1215	Scr_LoadFX	00846f20	007fd060	helper	same	Own body identical in both exes and in the port; G_EffectIndex differs only by the configstring base (SP 0x7f3, MP/port 0x820) and by MP's developer dump of the table before the overflow...
+csc	cfunction	loadfx	898	CScr_LoadedFX	007e60d0	00784ec0	number	same	Identical code in both exes; the helper only differs by the effect configstring range (SP 0x7f3..0x8b6, MP/port 0x820..0x8e3 = 2080..2275), which the port uses consistently on server and...
+gsc	method	playsound	643	ScrCmd_PlaySound	0083f960	007f45d0	code	same	The port's SP-level branch reproduces SP: optional alias, optional notify string, temp entity event 4 or 5 without the broadcast flag, and the notify bookkeeping of SP 0x00813020.
+gsc	method	delete	640	ScrCmd_Delete	00840020	007f4af0	helper	fixed	SP's G_FreeEntity forgets the mover info and the cached tags (SP 0x00438A70); its release of brush bad places and rope anchors is not ported, no zombie script makes either
+gsc	function	getent	613	Scr_GetEnt	00467f00	00442240	code	fixed	SP raises script errors (SP 0x00442240, 0x00812620): a parameter count other than 2, a key that is an actor's, sentient's or client's field, or no string field; and gives the second entity named "player". The port does on an SP level. No zombie script reaches one
+gsc	function	getentarray	605	Scr_GetEntArray	004e0940	00619040	code	fixed	SP raises a script error for a key that is no entity field, an actor's, sentient's or client's, or no string field (SP 0x00619040, 0x008126E0); the port gave undefined, and now does as SP on an SP level. The scripts use five keys, all string fields
+gsc	function	gettime	567	GScr_GetTime	0083cd00	007f07c0	same		
+gsc	method	setmodel	449	ScrCmd_SetModel	008400a0	007f4b70	helper	fixed	SP's G_DObjUpdate drops the cached tags (SP 0x0062B490); left: a missing actor or player model becomes defaultactor, a player's DObj is rebuilt at once, an actor's hidden parts are reset
+gsc	function	randomintrange	428	Scr_RandomIntRange	00843eb0	007f8920	number	same	Same code in both exes (error when max <= min, otherwise G_irand(min, max)); only the error text differs, and the port matches.
+gsc	function	randomint	342	Scr_RandomInt	00843e30	007f88a0	same		
+gsc	function	distancesquared	310	Scr_DistanceSquared	00844850	007f9320	same		
+gsc	function	playfxontag	286	Scr_PlayFXOnTag	00847220	007fd380	code	same	SP differs from MP only in skipping the bone lookup for "tag_origin" (plus event number 0x48 vs 0x47 and the configstring base), and the port already has that skip on an SP level.
+gsc	function	isalive	274	GScr_IsAlive	0083c9b0	007eff90	code	fixed	SP asks an actor for Physics.bIsAlive, never its health (SP 0x007EFF90)
+gsc	function	randomfloatrange	248	Scr_RandomFloatRange	00843f10	007f8980	code	fixed	SP takes equal bounds for an error (SP 0x007F8980)
+csc	cfunction	getlocalplayers	246	CScr_GetLocalPlayers	0043ee40	00687d10	code	same	SP returns an array holding the one local player, entity number predictedPlayerEntity.nextState.number (cg+0x8bee0), with no snapshot test (SP 0x00687d10 #0-#17; its CL_LocalClient_IsActive...
+gsc	method	hide	239	ScrCmd_Hide	005768d0	0040f320	code	same	SP only sets eFlags 0x20 on the entity and, if it has a client, on the client's ps.eFlags (SP 0x0040f320 #13-#20); the port sets the same two flags and in zombie mode returns before MP's...
+gsc	function	isplayer	234	GScr_IsPlayer	008487d0	007f0000	layout		
+gsc	function	playfx	230	Scr_PlayFX	00847010	007fd150	code	fixed	SP takes effects 1 to 195 alone, else a script error (SP 0x007FD150)
+gsc	function	setdvar	227	GScr_SetDvar	0083cc20	007f0570	code	fixed	SP sets the cleaned value (" to ') and reads no third parameter (SP 0x007F0570); so now on an SP level. Left: SP refuses a dvar registered without its flag 0x4000 and sets as a script; this engine's dvars lack SP's flags (ai_meleeRange)
+gsc	function	playsoundatposition	224	Scr_PlaySoundAtPosition	0083fe00	007f4840	helper	same	The body is identical in the two exes and the port's is the same; the flagged helper G_PlaySoundAliasAtPoint differs only in the width of svFlags (SP 0x00452150 #11, port, and under it SP's...
+gsc	function	getdvar	221	GScr_GetDvar	0083ca00	007f0140	helper	same	The two helpers flagged as different are MP's SV_Archived_Dvar_GetVariantString thunks (a jmp to 0x004bebe0 / 0x004d69c0) against SP's inlined Dvar_GetVariantString bodies (SP 0x00509730,...
+gsc	method	linkto	221	ScrCmd_LinkTo	0083e940	007f2380	code	fixed	When an entity in a scripted animation links, SP keeps the inverse of the parent's tag matrix (SP 0x008134C0); the port zeroed it and now keeps it (G_EntLinkToInternal). No zombie script links an entity mid-animation
+gsc	function	int	218	GScr_CastInt	00844380	007f8c50	same		
+gsc	function	randomfloat	212	Scr_RandomFloat	00843e80	007f88f0	same		
+gsc	method	sethintstring	195	GScr_SetHintString	008417c0	007f6260	code	fixed	SP takes the four use triggers and actors (SP 0x007F6260): a script mover is a script error now on an SP level, and the message bytes are SP's. Left: an actor's hint, kept for its use prompt in SP (0x00603A31), is dropped
+gsc	method	istouching	194	ScrCmd_IsTouching	0083f420	007f4460	code	fixed	SP 0x007F4460 reads no second parameter; on an SP level the port now ignores MP's optional widening vector. No zombie script passes one
+gsc	function	anglestoforward	190	Scr_AnglesToForward	00844d90	007f9880	same		
+gsc	function	spawnstruct	189	Scr_AddStruct	006bf070	004c2fc0	same		
+gsc	method	moveto	188	ScriptEntCmd_MoveTo	005098a0	004442f0	helper	same	Own body, ScriptEntCmdGetCommandTimes and ScriptMover_SetupMove are the same code in both exes and in the port; the two helpers that differ are covered: BG_EvaluateTrajectory's extra SP...
+gsc	function	precacheitem	183	Scr_PrecacheItem	00845b90	007fa900	helper	same	Own body differs only in the error text; SP's G_FindItem takes an extra model argument (0 here) that only offsets into the item list (SP 0x00689f00 #6-#9), and the port's G_FindItem /...
+gsc	function	distance	173	Scr_Distance	00844760	007f91d0	same		
+gsc	method	playloopsound	169	ScrCmd_PlayLoopSound	0083fe60	007f48a0	code	same	SP clears bit 0 of the entity's 16-bit svFlags (ent+0xda, SP 0x007f48a0 #19-#20) instead of MP's broadcastTime=-1, then sets loopSoundId and the 0..32 s fade exactly as MP; the port's...
+gsc	method	dodamage	162	ScrCmd_DoDamage	008402f0	007f5080	code	fixed	The builtin is SP's; DestructibleRadiusDamage under it now caps a destructible's tread damage by the base piece's health alone on an SP level (SP 0x0069503A), without MP's vehicle_damage_max_shielding.
+gsc	function	issubstr	156	Scr_IsSubStr	00845120	007f9d20	helper	same	Both exes and the portat HEAD, 7590-7600 in the working tree) return strstr(GetString(0), GetString(1)) != 0 as an int; the helper flagged as different (MP 0x009ce8a6 / SP 0x009680b6) is...
+gsc	function	getdvarint	153	GScr_GetDvarInt	0083ca50	007f02d0	code	fixed	for a hashed name SP asks the dvar for its integer (SP 0x007F02D0)
+gsc	method	stoploopsound	153	ScrCmd_StopLoopSound	0083ff40	007f4980	code	same	SP writes only loopSoundId (0 when called without a fade) and the fade (-1000 * seconds, same 0..32 check), never MP's broadcastTime = level.time + 300 (SP 0x007f4980 #16-#25, #54-#55); the...
+csc	cfunction	playsound	152	CScr_PlaySound	007e66c0	00785500	helper	same	Own body and CG_PlaySoundWithHandle are the same code (parameters, volume clamp, entity 1022, origin optional); the one helper with different code, the sound entity handle (SP 0x00623700:...
+gsc	method	unlink	147	ScrCmd_Unlink	0083ef00	007f30c0	code	fixed	SP's G_EntUnlink (SP 0x0058E900) moves a running scripted animation into the world by the link's transform (base matrix, origin and angle errors); the port's now does too. No call found that unlinks mid-animation
+csc	cfunction	playfxontag	137	CScr_PlayFXOnTag	007ee150	008944f0	code	same	SP has no missing-DObj script error and lets CG_PlayBoltedEffect fall back to an unbolted play when the DObj or tag is missing (SP 0x008944f0 #30-#65, SP 0x005fe9d0 #8-#49); the port skips...
+gsc	function	getarraykeys	133	GScr_GetArrayKeys	0084c8a0	00803f20	same		
+gsc	function	vectornormalize	131	Scr_VectorNormalize	00844b60	007f9630	same		
+gsc	method	setcursorhint	130	GScr_SetCursorHint	00841650	007f6120	code	fixed	SP has no HINT_INHERIT for a trigger_radius_use (SP 0x007F6120)
+gsc	method	setclientflag	121	GScr_SetClientFlag	0084fb10	008063c0	layout		
+gsc	function	abs	118	GScr_abs	008441e0	007f8d70	same		
+gsc	method	settext	118	HECmd_SetText	00832490	007de4c0	helper	fixed	HECmd_SetText is SP's (SP 0x007DE4C0), and so now is its message string (Scr_ConstructMessageString, SP 0x0065CE20): bytes 0x07-0x0d, 0x1a, 0x1b and 0x80 up become dots, as iprintln's and sethintstring's.
+csc	cmethod	delete	115	CScrCmd_Delete	007e8af0	007878f0	code	same	MP and SP are the same code (death and entityshutdown notifies, flag 0x100 cleared, entity fields and script entity freed, fake-entity flag 4 set); the one differing instruction (#37) reads...
+gsc	method	gettagorigin	113	GScr_GetTagOrigin	005b6500	004a8330	code	fixed	SP gives undefined and no script error for no model or no such tag (SP 0x004A8330)
+gsc	function	vectordot	109	Scr_VectorDot	00844a60	007f9530	same		
+gsc	method	rotateto	108	ScriptEntCmd_RotateTo	0045be20	00435640	helper	same	Own body (classname check, AngleNormalize180 per axis), ScriptMover_Rotate and ScriptMover_SetupMove are the same code in both exes and the port; the helpers that differ,...
+csc	cmethod	setmodel	107	CScrCmd_SetModel	007e8c30	00787a30	code	differs	SP writes the model and flag 2 (SP 0x00787A30); the DObj comes on the entity's next frame. Here at once, as MP. Only visible where an effect is played the same frame on a tag other than tag_origin: _lights.csc's spin effect (tag_fx1). Left as is.
+gsc	method	show	104	ScrCmd_Show	006ade70	00437890	code	same	SP only clears eFlags 0x20 on the entity and, if it has one, on its client's ps.eFlags (SP 0x00437890 #14-#19); MP also zeroes clientMask[0], and the port returns before that in zombie mode.
+gsc	method	fadeovertime	102	HECmd_FadeOverTime	00832ce0	007dec20	number	fixed	SP's fadeovertime and BG_LerpHudColors are MP's code with shifted hudelem offsets; both exes round the milliseconds (fadd 2^-30, fistp, SP 0x007DECF9) where the port truncated, and the color, alpha and glow setters round each byte likewise. Fixed for MP and zombies.
+csc	cfunction	randomfloatrange	99	CScr_RandomFloatRange	007e53d0	007841c0	same		
+gsc	function	getanimlength	98	GScr_GetAnimLength	0083cfd0	007f1340	same		
+gsc	method	getentitynumber	91	GScr_GetEntityNumber	00841cf0	00803710	layout		
+gsc	method	clearclientflag	89	GScr_ClearClientFlag	0084fc50	00806450	layout		
+csc	cfunction	spawn	87	CScr_Spawn	007e8080	00786ec0	helper	same	SP's client spawn (0x00786ec0) is MP's with shifted centity offsets; the two 'different code' helpers differ only by struct size (CG_Spawn divides by sizeof 0x320 instead of 0x32c;...
+gsc	function	vectortoangles	83	Scr_VectorToAngles	00844c20	007f96f0	same		
+csc	cfunction	getentarray	82	CScr_GetEntArray	005894b0	0054afb0	number	same	SP's client getentarray (0x0054afb0) is MP's instruction for instruction (the 'different' callee is the VM's Scr_GetOffset), and the port's CScr_GetEntArray does the same for the one key...
+gsc	method	attach	82	ScrCmd_attach	0083dca0	007f1a10	code	differs	SP holds 31 attached models an entity, here 19 (SP 0x00648340), a struct and network size; and SP re-hides an actor's gib parts as its DObj is rebuilt (SP 0x0042BDC0, under G_DObjUpdate). No script found that attaches 20
+gsc	function	isai	80	GScr_IsAI	0084d7b0	007f0050	layout		
+gsc	method	notsolid	80	ScriptEntCmd_NotSolid	004d14c0	00649d90	helper	same	Both exes and the port skip a script_origin with a developer print, otherwise set eFlags bit 1, r.contents 0 and relink; with contents 0 SV_LinkEntity's differing mask (SP 0x0069548f #17)...
+gsc	method	getcurrentweapon	76	PlayerCmd_getCurrentWeapon	006375e0	005d32d0	code	same	SP returns the name of ps.weapon, else of the byte at client+0x1a48 (the weapon of the client's usercmd), else "none", with no ClientPlaying test, and the port's zombiemode branch does...
+gsc	method	connectpaths	73	GScr_ConnectPaths	008413b0	007f5680	number	same	SP's connectpaths and its two helpers are MP's code; only the entity flag bits are numbered differently (dynamic-path 0x100 in SP / 0x800 in MP, paths-connected 0x400 / 0x4000000), and the...
+gsc	method	orientmode	72	ActorCmd_OrientMode	008f7b50	007cc7c0	number	same	SP's orientmode (0x007cc7c0) is MP's code with the actor's orientation fields at other offsets, and the port's ActorCmd_OrientMode matches it mode by mode (same nine modes and values, same...
+gsc	function	precachestring	72	Scr_PrecacheString	00845c30	007fa9a0	code	fixed	SP builds the string as a message's (SP 0x007FA9A0): a plain string or a player is taken too
+gsc	method	destroy	68	HECmd_Destroy	008321d0	007de470	helper	same	SP's destroy is MP's code (the 'different' helper Scr_FreeHudElem only divides by the other hudelem size, 0x84 instead of 0x7c) and the port's HECmd_Destroy does the same: notify "death",...
+gsc	method	giveweapon	68	PlayerCmd_giveWeapon	005b4560	006114e0	code	fixed	SP's needed start ammo counts the stock alone (SP 0x007D5F20) and its Add_Ammo takes a weapon that shares a held one's ammo (SP 0x0042D6A0). Left: SP's zombiemode rule for an empty offhand during a throw-back (SP 0x0043D760)
+gsc	method	setgoalpos	67	ActorCmd_SetGoalPos	008f88e0	007cd730	helper	same	SP 0x007CD730 is MP's code with SP offsets; its helpers differ only in struct sizes (entity size, svFlags width). The port's ActorCmd_SetGoalPos does the same.
+gsc	method	animmode	66	ActorCmd_AnimMode	008f79b0	007cc620	number	same	SP 0x007CC620 sets the same ten modes; its entity flag 0x1000 is the port's 0x2000 (no anim update), set and read by the same functions in both exes. The port matches.
+gsc	method	gettagangles	66	GScr_GetTagAngles	0058e860	00500030	code	fixed	as gettagorigin (SP 0x00500030)
+gsc	function	strtok	65	Scr_StrTok	00845270	007f9e70	same		
+gsc	function	anglestoup	64	Scr_AnglesToUp	00844d10	007f97e0	code	fixed	SP takes exactly one parameter (SP 0x007F97E0)
+gsc	method	geteye	64	ScrCmd_GetEye	0083f290	007f4170	helper	fixed	SP's eye (SP 0x00646AD0): a player's is origin, view height and lean, with no view bob; an actor's obeys ai_useCheapSight (SP 0x007CF350), which Shangri-La sets. The port's are SP's now on an SP level, off turrets and vehicles.
+csc	cfunction	playfx	62	CScr_PlayFX	005e4830	00644e60	helper	fixed	Both exes round the sixth parameter (time) to the nearest ms (SP fadd/fistp at 0x006452E6, MP 0x005E4CB6). The port truncated, 1 ms off at most (a negative time started 1 ms late). It rounds now, MP too.
+gsc	method	switchtoweapon	62	PlayerCmd_switchToWeapon	0051c320	0042aa10	code	same	Same on a zombie map: player check, G_GetWeaponIndexForName, Scr_ParamError(0) for an unknown weapon (SP words it differently, SP 0x004faaf0), BG_PlayerHasWeapon, reliable server command 'a...
+csc	cmethod	getentitynumber	61	CScrCmd_GetEntityNumber	007e9020	00787e00	number	same	Same code in both exes and the port: the local player's predicted entity, a client-script entity (>= 1024) or a snapshot entity, and its nextState.number is returned; only struct offsets...
+gsc	function	precacheshader	60	Scr_PrecacheShader	00845be0	007fa950	helper	same	Same: the own body is identical and G_MaterialIndex differs only in the configstring base (MP/port 2580, SP 2535, the port's own numbering) and in the table size (MP/port 256, SP 144),...
+gsc	method	setshader	60	HECmd_SetMaterial	00832550	007de580	helper	same	Same: parameter count (1 or 3), G_MaterialIndex, width/height checks, the cleared type settings and the fields written match; the type literal (MP/port 8, SP 4 at SP 0x007de692) is each...
+gsc	function	angleclamp180	58	Scr_ClampAngle180	00844e50	007f9940	same		
+gsc	method	rotatepitch	58	ScriptEntCmd_RotatePitch	0043ed30	005ae640	helper	same	A call of ScriptEnt_RotateAxis(entref, 0) in both exes and the port; that function and ScriptMover_Rotate differ only in struct offsets, and the helpers that differ, BG_EvaluateTrajectory...
+csc	cfunction	spawnstruct	57	CScr_AddStruct	00637990	004ab940	same		
+gsc	function	getdvarfloat	54	GScr_GetDvarFloat	0083caa0	007f0320	code	fixed	for a hashed name SP asks the dvar for its float (SP 0x007F0320)
+gsc	method	hasperk	53	PlayerCmd_HasPerk	0082dec0	007d90b0	code	fixed	SP's ClientThink puts the session's perks back in the player state each think (SP 0x0053B490), so they last through a spawn; here a spawn cleared them for good
+gsc	function	animhasnotetrack	52	GScr_AnimHasNotetrack	0083d030	007f1400	code	same	Same: Scr_GetAnim(0), Scr_GetConstString(1), Scr_GetAnims and XAnimNotetrackExists (MP 0x0056f210 / SP 0x0063e570, identical) in the same order; the only code difference is that MP...
+gsc	function	getmovedelta	52	GScr_GetMoveDelta	00846b70	007fcc50	same		
+gsc	method	movez	52	ScriptEntCmd_MoveZ	00456920	0062c240	helper	same	A call of ScriptEnt_MoveAxis(entref, 2) in both exes and the port; that function and ScriptMover_Move differ only in struct offsets, and the helpers that differ, BG_EvaluateTrajectory and...
+gsc	function	newhudelem	52	GScr_NewHudElem	00627950	006707c0	code	differs	kept on purpose: SP has no archived elements and one list of 31 a player (SP 0x0058FFB0), so a watcher has their own; here MP's two lists stay, and a watcher has the watched player's
+gsc	method	setviewmodel	52	PlayerCmd_SetViewmodel	0082a990	007d6ef0	code	same	SP writes ps.viewmodelIndex at once too (SP 0x007D6EF0); here ClientEndFrame copies it the same frame
+gsc	method	usetriggerrequirelookat	52	GScr_UseTriggerRequireLookAt	00841c40	007f6400	code	same	Same: the port's zombiemode branch accepts trigger_use and trigger_radius_use exactly as SP 0x007f6400 #15-#19 (scr_const 0x023a56ae = "trigger_use" and 0x023a56b8 = "trigger_radius_use",...
+gsc	method	takeweapon	51	PlayerCmd_takeWeapon	005bba50	0052f960	code	same	SP 0x0052F960 verifies the weapon name (script error for an unknown one) before taking the weapon; the port's zombies branch does the same.
+gsc	method	setanim	50	GScr_SetAnim	00850240	00801640	helper	same	SP 0x008011F0 stores an anim command (type 3) before the DObj lookup and hands its index to XAnim; the port's zombies branch does the same. SP's flag 0x1000 is the port's 0x2000.
+csc	cfunction	anglestoforward	48	CScr_AnglesToForward	007e5ed0	00784cc0	same		
+csc	cfunction	deletefx	48	CScr_DeleteFX	007ede20	008940a0	code	same	SP 0x008940A0 takes 2 or 3 parameters, the third being the force-kill flag (default on); the port's zombies branch does the same.
+gsc	method	setorigin	47	PlayerCmd_setOrigin	0082a3b0	007d6620	code	same	SP 0x007D6620 sets the player's origin exactly through 0x00646210 (no +1 on z); the port's zombies branch does the same. MP's unlink before the relink stays: no visible effect.
+gsc	function	weaponclass	47	GScr_WeaponClass	00842f30	007fc610	helper	fixed	Own body (SP 0x007FC610) and name lookup match; the only difference, SP's G_RegisterWeapon registering all 16 world models as a level loads (0x006339E0), is in g_items.cpp now.
+gsc	method	setinvisibletoplayer	44	ScrCmd_SetInvisibleToPlayer	0083e5b0	007f2260	code	fixed	SP 0x007F2260 sets the bit of the player state's clientNum, which for a spectator is the watched player's; the snapshot and use triggers already read that bit here. The port now writes it too (setvisibletoplayer likewise)
+gsc	method	setvalue	44	HECmd_SetValue	008320f0	007de390	number	same	SP 0x007DE390 is MP's code with shifted hudelem offsets; the type it keeps is 3 there, SP's number for the score element (newscorehudelem SP 0x005D3BB0), 7 here.
+gsc	method	freezecontrols	43	PlayerCmd_FreezeControls	0082ccc0	007d7770	layout		
+gsc	function	bullettracepassed	41	Scr_BulletTracePassed	00843620	007f84a0	helper	fixed	SP's mask has the sky's contents, 0x800 (SP 0x007F84B3). Left: with characters hit, SP tests a player by its box unless the ignored entity is a player (SP 0x0069CC80); no script passes that
+gsc	function	newclienthudelem	41	GScr_NewClientHudElem	0057ee40	00680180	code	same	SP's HudElem_Alloc (0x00504390) takes the client number and zeroes the team, as the port's call with team 0 does; the archived=1 default is MP's (known, kept).
+gsc	method	startragdoll	41	GScr_StartRagdoll	006b76e0	005fdda0	code	fixed	SP first gives a script mover a fake actor's bounds, contents 0x8000, flesh and svFlags, as makefakeai does, with no relink (SP 0x005FDDEA); now on an SP level. Five's scripts ragdoll actors alone.
+gsc	method	useanimtree	40	GScr_UseAnimTree	00850260	00808770	helper	fixed	SP refuses a player or player corpse, whose anim tree belongs to the client or the corpse (SP 0x00603120); the port now refuses them on an SP level. No zombie script calls it on either
+gsc	method	detach	39	ScrCmd_detach	0083de80	007f1b00	helper	same	SP 0x007F1B00 and G_EntDetach (0x00644D30) are MP's code with SP offsets; only the attachment slots differ (31 against the port's 19, known).
+gsc	method	getplayerangles	39	PlayerCmd_getAngles	0082a5e0	007d6c80	layout		
+gsc	method	getstance	39	ScrCmd_GetStance	00841540	007f37f0	layout		
+gsc	method	getweaponslistprimaries	38	PlayerCmd_GetWeaponsListPrimaries	00419cf0	00697600	number	same	SP 0x00697600 is MP's code: 15 held-weapon slots, a weapon listed when its def's inventoryType (def+0x2c in both) is 0. The port does the same.
+gsc	function	isarray	38	GScr_IsArray	0083c970	007eff50	same		
+csc	cmethod	gettagorigin	37	CScr_GetTagOrigin	0043ae70	0054fd80	code	fixed	SP gives undefined for an entity with no model (SP 0x0054FD80); MP's raised an error on the server's script instance from client script, which is fatal
+csc	cmethod	playsound	37	CScr_PlaySoundOnEntity	007e67e0	00785620	helper	same	Own body (entity lookup, origin read only when exactly 3 parameters, volume only when exactly 4) and CG_PlaySoundWithHandle are the same code; the helper with different code, the sound...
+csc	cfunction	randomintrange	37	CScr_RandomIntRange	007e5370	00784160	same		
+csc	cfunction	setsaveddvar	37	CScr_SetSavedDvar	007e6260	007850a0	helper	same	Own body is the same code (only string addresses differ) and matches the port; the real difference below it, SP letting a script-sourced set change a cheat-protected dvar (SP...
+gsc	method	disconnectpaths	37	GScr_DisconnectPaths	00841310	007f55f0	code	fixed	SP sweeps a path link against the entity with a capsule 72 high (SP 0x0058E060); MP's 48 ran here
+gsc	function	earthquake	37	GScr_Earthquake	00848db0	007fbf80	code	fixed	SP makes no quake while its cheat dvar g_earthquakeEnable (default 1) is off (SP 0x007FC04F); the dvar is registered here as an SP level's first quake is made, and read as SP does.
+csc	cfunction	getdvarint	36	CScr_GetDvarInt	007e64a0	007852e0	same		
+gsc	method	hasweapon	36	PlayerCmd_hasWeapon	0052e390	0041e4b0	helper	same	Same: MP's helper returns the held-weapon slot (0x0062CC80), SP's a bool (0x00451D60), both tested for non-zero; 15 slots, same lookup by name. The port matches.
+gsc	function	tolower	36	Scr_ToLower	00845200	007f9e00	same		
+gsc	method	rotateroll	35	ScriptEntCmd_RotateRoll	004342e0	0042eb40	helper	same	SP 0x0042EB40 calls RotateAxis 0x00535D20 with axis 2: MP's code with SP offsets, and the port's ScriptEnt_RotateAxis matches it. Helpers differ only by the known link mask and trajectory type 15.
+csc	cmethod	set_filter_pass_enabled	34	CScr_Set_Filter_Pass_Enabled	007ecb80	0078b940	code	same	SP 0x0078B940 differs from MP only in register use and the cg offset: exactly 3 params, filter 0-2, pass 0-16 (sic, both exes), stores enabled != 0. The port does the same.
+gsc	method	setmode	34	GScr_SetMode	00840aa0	007f5860	layout		
+gsc	function	anglestoright	33	Scr_AnglesToRight	00844d50	007f9840	same		
+gsc	function	length	33	Scr_Length	008448d0	007f93a0	same		
+csc	cmethod	moveto	32	CScrCmd_MoveTo	00514410	0060e930	helper	same	SP 0x0060E930 is MP's code with SP offsets (fake entity flag |= 1, command times, CScriptMover_Move 0x007893F0); the port's CScrCmd_MoveTo matches. Helper change is trajectory type 15, in the port.
+gsc	method	getorigin	32	ScrCmd_GetOrigin	0083f000	007f3540	code	fixed	For a brush-model entity SP 0x007F3540 returns the bounds' centre (G_EntityCentroid 0x00474EA0); the port now does too. No shipped call is on a brush model
+gsc	method	setweaponammoclip	32	PlayerCmd_SetWeaponAmmoClip	0082bc30	007d7e60	code	fixed	SP gives a dual wield's other gun the count it was given, held to its clip (SP 0x007D7DE0); MP's filled it. SP also raises a script error for "none" or an unknown weapon (SP 0x007D7ED5), as the port now does
+gsc	method	shellshock	32	GScr_ShellShock	00848ef0	00802ca0	code	same	The port's zombiemode branch GScr_ShellShock_SP matches SP 0x00802CA0: at least 2 params, a longer shock still running is kept, no perk scaling, pm_flags 0x10000 set whatever the health.
+csc	cfunction	stopfx	31	CScr_StopFX	00488a80	005ba7a0	number	same	Identical in both exes (SP 0x005BA7A0); the two helpers differ only in FxEffect offsets (0xB4/0xB0). The port's CScr_StopFX does the same: 2 params, local client 0, force-kill the handle.
+gsc	function	bullettrace	31	Scr_BulletTrace	00850720	007f8190	helper	fixed	SP's mask has the sky's contents, 0x800 (SP 0x007F81A6)
+gsc	function	distance2d	29	Scr_Distance2D	008447e0	007f9250	same		
+gsc	function	issplitscreen	29	GScr_GetAssignedTeam	0084a7a0	00803dc0	same		
+gsc	function	precacherumble	29	FUNCTION_NULLSUB	0048f620	00651a30	same		
+gsc	method	setcandamage	29	ScriptEntCmd_SetCanDamage	005b6710	0042cb30	number	same	Identical in both exes but for the takedamage offset (SP 0x0042CB30, ent+0x157); the port stores the same low byte of the one int parameter and errors on any other count.
+gsc	function	sighttracepassed	29	Scr_SightTracePassed	004f3b60	00640260	code	fixed	the source never gave the trace its mask, so every sight trace passed; both exes build the context with it (SP 0x00640260). SP's also fails through effects that block sight (0x005D8B90)
+gsc	method	traversemode	29	ActorCmd_TraverseMode	008f7910	007cc580	number	same	Identical in both exes but for the actor field offset (SP 0x007CC580, actor+0xDD8); the port stores the same 1/2/3 for gravity/nogravity/noclip and errors otherwise.
+csc	cfunction	getrealtime	28	CScr_GetRealTime	007e7490	007862d0	code	fixed	SP gives cls.realtime (SP 0x007862D0 reads 0x02B10CAC), the client's summed frame time, which stops in a pause. MP gives the wall clock. On an SP level the port now gives cls.realtime, which already stopped while paused (CL_RunOncePerClientFrame).
+csc	cmethod	stoploopsound	28	CScr_StopLoopSoundOnEntity	007e6d00	00785b40	helper	same	SP 0x00785B40 equals MP with SP offsets and the port matches. SP's sound-handle helper 0x00623700 (an actor's team, 3 team bits) is already in the port's CG_SndEntHandle (L16).
+gsc	method	animcustom	28	ScrCmd_animcustom	008f8400	007cd250	helper	same	Port matches SP 0x007CD250: push AIS_CUSTOMANIM, read the function, kill the anim script, store func and _custom. Helpers differ in offsets and registers only; their two tables are equal.
+gsc	method	enablelinkto	28	ScrCmd_EnableLinkTo	0083ef60	007f3160	code	same	Same checks and effect (SP 0x007F3160). SP only adds the entity type to the error text (0x00503250); its flag bit is 0x800 where MP's and the port's is 0x1000, a renumbering.
+gsc	method	playlocalsound	28	ScrCmd_PlayLocalSound	0082d350	007d7c70	code	same	Same result (SP 0x007D7C70): both send the player the server command "s <aliasId>", type 0. MP and the port read the string twice and format into a 64-byte buffer; SP uses va.
+gsc	method	solid	28	ScriptEntCmd_Solid	0047e5a0	0045e910	helper	same	SP 0x0045E910 equals MP: a script_origin is refused, script_model and rocket get contents 0x2080, others 1, eFlags bit 0 is cleared, then relink. The port's ScriptEntCmd_Solid does the same.
+csc	cfunction	getdvar	27	CScr_GetDvar	007e6140	00784f30	same		
+csc	cmethod	playloopsound	27	CScr_PlayLoopSoundOnEntity	007e6ba0	007859e0	helper	same	SP 0x007859E0 equals MP with SP offsets and the port matches. SP's sound-handle changes (0x00623700: an actor's team, 3 team bits) are in the port's CG_SndEntHandle and SND_EntHandle (L16).
+gsc	function	getvehiclenode	27	GScr_GetVehicleNode	00442bc0	005210e0	same		
+gsc	function	newdebughudelem	27	GScr_NewDebugHudElem	00545010	00600bf0	same		
+gsc	method	rotateyaw	27	ScriptEntCmd_RotateYaw	0054ccc0	0066fa00	helper	same	SP 0x0066FA00 calls RotateAxis 0x00535D20 with axis 1: MP's code with SP offsets, and the port's ScriptEnt_RotateAxis matches it. Helpers differ only by the known link mask and trajectory type 15.
+gsc	method	usebuttonpressed	27	PlayerCmd_useButtonPressed	006317a0	00589170	layout		
+csc	cfunction	getarraykeys	26	CScr_GetArrayKeys	007e7970	007867b0	same		
+csc	cfunction	randomint	26	CScr_RandomInt	007e52f0	007840e0	same		
+csc	cfunction	setdvarfloat	26	CScr_SetDvarFloat	007e6690	007854d0	helper	same	Same body in both exes (SP 0x007854D0). It sets with the internal source, so SP's looser cheat-dvar rule (0x00861DAB, already in the port's Dvar_CanChangeValue) is not involved.
+gsc	function	bbprint	26	GScr_BBPrint	0048f620	00651a30	same		
+gsc	function	weaponclipsize	26	GScr_WeaponClipSize	00842df0	007fc190	helper	fixed	Own body (SP 0x007FC190) matches; G_RegisterWeapon is SP's now, and BG_GetClipSize rounds clip x player_clipSizeMultiplier as both exes do, where the port truncated (the same at the default 1).
+csc	cfunction	distancesquared	25	CScr_DistanceSquared	007e5810	00784600	same		
+gsc	function	precacheshellshock	25	Scr_PrecacheShellShock	00845b30	007fa8a0	helper	same	Port matches SP 0x007FA8A0: its zombies branch reads view.fadeTime from bg_shock_viewKickFadeTime (SP 0x005955C9, MP fixed 3000). Other times truncate where the exes round (1 ms).
+csc	cmethod	earthquake	24	CScrCmd_Earthquake	007efab0	00787ed0	helper	same	Own body identical (SP 0x00787ED0). The shake helpers (SP 0x0042D0B0, 0x00770110) differ from MP only by MP's demo-paused checks, which are false outside demo playback.
+gsc	function	cos	24	GScr_cos	00844000	007f8a70	same		
+gsc	method	setactionslot	24	PlayerCmd_SetActionSlot	0082dc60	007d8970	code	same	Slots 1-4 and the four options match SP 0x007D8970. SP's weapon lookup also registers while the level is initializing (no player exists then); an unknown name errors on both.
+csc	cmethod	linkto	23	CScrCmd_LinkTo	007ec860	0078cbc0	code	fixed	SP stores only the parent and tag (SP 0x0078CBC0), and its CG_LinkTransformForEntity (SP 0x005011C0) puts a tag-linked entity on the tag. The port kept the offset from link time; on an SP level the offset is now identity. Reached: Shangri-La's water trails, the flinger's and zipline's fake weapon.
+gsc	method	allowsprint	23	PlayerCmd_AllowSprint	00571cb0	0048bb90	layout		
+gsc	method	cansee	23	ActorCmd_CanSee	008f7020	007cace0	code	fixed	Reached. SP 0x007CACE0 asks SP's sight code (0x0045F800, 0x005EEB10 -> 0x00629A20: ai_useCheapSight eye, sight blocked by effects, turret branch); the port now does on an SP level. Left: a debug line SP draws when a dvar is set.
+gsc	function	physicstrace	23	Scr_PhysicsTrace	00843990	007f8560	code	fixed	SP gives the trace's end point, a vector, with mask 0x820011 and no mask parameter (SP 0x007F8560); MP's array ran here, and Call of the Dead's vodka bottle never fell
+csc	cmethod	set_filter_pass_constant	22	CScr_Set_Filter_Pass_Constant	007eccf0	0078bab0	number	same	SP 0x0078BAB0 equals MP but for cg offsets: exactly 4 params, filter 0-2, pass 0-15, constant 0-15, then stores the float. The port's CScr_Set_Filter_Pass_Constant does the same.
+csc	cfunction	spawnfx	22	CScr_SpawnFX	007ede70	00894250	code	same	The port's zombies branch (CScr_SP_SpawnFX) matches SP 0x00894250 / 0x00894030: 4-6 parameters, a client ET_FX entity returned (undefined when none is free), time read and unused.
+gsc	method	getturretowner	22	GScr_GetTurretOwner	00840b80	007f5940	number	same	SP 0x007F5940 is MP's code with SP offsets: error unless a turret; if active, the owner entity (entity 1023 when none), else undefined. The port does the same.
+gsc	function	sin	22	GScr_sin	00843fd0	007f8a40	same		
+gsc	method	vibrate	22	ScriptEntCmd_Vibrate	004ac450	0061cff0	number	same	SP 0x0061CFF0 is MP's code with SP offsets; the port matches it line for line (4 parameters, apos trajectory type 5, period and time truncated to ms on both).
+csc	cmethod	playrumbleonentity	21	NULLSUB2	0048f620	00651a30	same		
+gsc	method	forceteleport	21	ActorCmd_ForceTeleport	008f73e0	007cb4c0	code	fixed	SP 0x007CB4C0 refreshes the goal with its own Actor_UpdateGoalPos (0x0040AAA0) and, while the level loads (0x01C0706C), re-finds the nearest node whatever the distance. The port now does both, using level.initializing for the loading state.
+gsc	method	getshootatpos	21	ScrCmd_GetShootAtPosition	0084d870	00807950	code	fixed	SP 0x00807950 takes an optional shooter (a setentitytarget tag on the entity wins), else SP's sentient eye, else tag_eye, else the centroid; the port now does the same. The AI combat scripts reach a player's eye
+gsc	function	getweaponmodel	21	Scr_GetWeaponModel	0083cea0	007f0fb0	code	fixed	SP reads the model index with two parameters or more and with a third that isn't 0 gives the view model (SP 0x007F0FB0); so now on an SP level (an empty view model gives ""). 16 world models as SP now.
+gsc	method	launchragdoll	21	GScr_RagdollLaunch	00502a00	004bbfd0	helper	same	Own body identical but for the event number (SP 0x004BBFD0, port's EV_PHYS_LAUNCH). SP's G_TempEntity throttles (0x00456E70) do not cover this event (0x4C); its 0x49 cap is in the port.
+gsc	method	radiusdamage	21	GScr_EntityRadiusDamage	00845ed0	007fb300	helper	fixed	SP is a script error, and does nothing, for a range or damage below 0 or a range above 65535 (SP 0x007FB0F0). Left: G_RadiusDamage keeps MP's script-vehicle branch, which SP lacks (SP 0x0043F3E0)
+gsc	method	setstance	21	ScrCmd_SetStance	00841440	007f3880	helper	fixed	going prone, both exes set proneDirection to the view's yaw (SP 0x007F3880); the source had the view's height
+gsc	method	setweaponammostock	21	PlayerCmd_SetWeaponAmmoStock	0082bd20	007d7f40	code	fixed	SP verifies the name, and for a clip-only weapon adds to the clip the room it has left, at most the count (SP 0x007D7FE2). The port set the clip outright. The claymore and syrette calls reach it.
+gsc	function	getsubstr	20	Scr_GetSubStr	00845160	007f9d60	same		
+gsc	method	setplayerangles	20	PlayerCmd_setAngles	0082a550	007d67b0	code	fixed	SP 0x007D67B0 leaves the entity's pitch as SetClientViewAngle set it. The port zeroed an unlinked player's pitch; it now does so on MP maps only.
+gsc	function	visionsetnaked	20	Scr_VisionSetNaked	00848450	007ff320	code	same	The port's zombies branch (G_SP_VisionSetNaked) matches SP 0x007FF320: an info string with an entry per client slot; config string 0x5ED is 1550 here. Duration truncated, SP rounds (1 ms).
+gsc	method	getweaponammoclip	19	PlayerCmd_GetWeaponAmmoClip	0082bea0	007d8050	code	fixed	SP 0x007D80B9 verifies the name, so "none" or an unknown name is a script error and the result is undefined. The port gave 0; it now matches SP.
+gsc	method	setlightintensity	19	GScr_SetLightIntensity	0084cf20	00805600	layout		
+csc	cfunction	anglestoup	18	CScr_AnglesToUp	007e5e30	00784c20	same		
+gsc	function	getnode	18	Scr_GetNode	005d5ff0	00492690	same		
+gsc	method	setclientdvar	18	PlayerCmd_SetClientDvar	0082c5e0	007d83c0	helper	same	Own body identical in both exes (SP 0x007D83C0) and in the port. Below it only the known Scr_ConstructMessageString and broadcast-only code in SV_SendServerCommand differ.
+csc	cfunction	getent	17	CScr_GetEnt	00622680	00498370	number	same	Own body identical; the helper (SP 0x00787470) differs in struct sizes only and the port's CScr_GetGenericEnt does the same. Every call uses the key "targetname".
+csc	cmethod	set_filter_pass_material	17	CScr_Set_Filter_Pass_Material	007eca30	0078b7f0	number	same	SP 0x0078B7F0 equals MP but for cg offsets: exactly 6 params, ranges 0-2, 0-15, 0-63, 0-5, 0-5, 0-5, an error when no material is mapped at that index. The port does the same.
+gsc	method	allowads	17	PlayerCmd_AllowADS	004896d0	00418170	layout		
+gsc	method	detonate	17	GScr_Detonate	00845fb0	007fb340	code	fixed	SP 0x007FB340 detonates a grenade or mine (weapon types 1, 6), else a script error; MP took grenade or projectile, and the port now follows SP on an SP level. Zombie maps detonate claymores and betties, which are grenade-type
+gsc	method	getmotionangle	17	ActorCmd_GetMotionAngle	008f7dc0	007cca30	number	same	Identical apart from struct offsets (SP 0x007CCA30); Actor_HasPath (SP 0x00656C50) differs only in where the path sits in actor_s. The port's body matches.
+gsc	function	physicsexplosionsphere	17	Scr_PhysicsExplosionSphere	00847a50	00807f10	code	fixed	SP's fifth parameter is the outer damage and the inner's default, the sixth the inner damage, with SP's errors (SP 0x00807F10); so now on an SP level. Zombie maps pass four.
+gsc	function	playrumbleonposition	17	FUNCTION_NULLSUB	0048f620	00651a30	same		
+gsc	method	setclientdvars	17	PlayerCmd_SetClientDvars	0082c860	007d8620	code	same	SP 0x007D8620 builds the same 'v name "value" ...' command, with one va per pair where MP uses five strncat; the port's MP body gives the same string and the same errors.
+csc	cfunction	clienthassnapshot	16	CScr_ClientHasSnapShot	004b42d0	00417920	layout		
+csc	cfunction	randomfloat	16	CScr_RandomFloat	007e5340	00784130	same		
+csc	cfunction	spawnfakeent	16	CScr_SpawnFakeEnt	007e4e70	00783c60	helper	same	Identical body; the helper (SP 0x005951E0) differs only by the centity size (0x320 against 0x32c) and its division. The port's CScr_GetFakeEntity does the same, -1 when all 512 are used.
+gsc	method	buttonpressed	16	PlayerCmd_buttonPressedDEVONLY	0084a7a0	005d0640	code	differs	The port has SP's body (SP 0x005D0640) but gates it on DevGui_IsActive(). SP gates it on level.loading (0x01C0706C, set by G_InitGame at SP 0x0051EABA), which the port lacks. Same in play.
+gsc	method	enableweapons	16	PlayerCmd_EnableWeapons	0082cfd0	007d8b90	layout		
+gsc	method	isonground	16	GScr_IsOnGround	0084fe00	00807010	code	fixed	SP 0x00807010 counts a player on a turret as on the ground, but not one seated in a vehicle (MP's 0x4000 test); the port now matches. No zombie script seats a player
+gsc	function	isstring	16	GScr_IsString	0083c950	007eff30	same		
+gsc	method	playrumbleonentity	16	METHOD_NULLSUB	0048f620	00651a30	same		
+gsc	method	disableweapons	15	PlayerCmd_DisableWeapons	0082cf20	007d8ae0	number	same	Same code; SP 0x007D8AE0 clears pm_flags 0x20000000 where MP clears 0x400000: both are the dive-to-prone bit in their own numbering (the port's is MP's, bg_dtp.cpp:414).
+gsc	method	playerlinktodelta	15	ScrCmd_PlayerLinkToDelta	0083eb30	007f2be0	code	fixed	SP has no ninth and tenth parameters and links to the tag as it is (SP 0x007F2BE0); the port no longer reads MP's link offsets on an SP level. No call passes over 8.
+gsc	method	settargetentity	15	GScr_SetTargetEntity	00840c30	007f5a70	helper	same	SP 0x007F5A70 is MP's code with SP offsets (turret check, then the manual target handle is set); the port's GScr_SetTargetEntity does the same.
+gsc	method	teleport	15	ActorCmd_Teleport	008f70f0	007cb1b0	code	fixed	SP's could-a-player-see-it test looks at a box 72 high and scales the distance by 0.685584 for the fog (SP 0x004B59A0), and SP's own Actor_UpdateGoalPos (0x0040AAA0) refreshes the goal; both are the port's now. Left: SP skips the sight tests while a level loads.
+csc	cmethod	gettagangles	14	CScr_GetTagAngles	006ac930	005f8060	code	fixed	as the client's gettagorigin (SP 0x005F8060)
+csc	cmethod	hasdobj	14	CScr_HasDObj	004b1d10	004efda0	same		
+csc	cfunction	int	14	CScr_CastInt	007e7e60	00786ca0	same		
+csc	cfunction	setfakeentorg	14	CScr_SetFakeEntOrg	007e4f10	00783d00	code	same	SP 0x00783D00 is MP's code with SP's fake-entity layout (0x320 bytes, origin at +0x28): local client, entity number, origin, in-use check; the port's CScr_SetFakeEntOrg does the same.
+csc	cfunction	sin	14	CScr_sin	007e7af0	00786930	same		
+gsc	method	allowedstances	14	ActorCmd_AllowedStances	008f7690	007cb770	number	same	Same: SP 0x007CB770 differs from MP in the actor_s offset of eAllowedStances only; the port's ActorCmd_AllowedStances matches instruction for instruction.
+gsc	function	getangledelta	14	GScr_GetAngleDelta	00846c60	007fcd40	same		
+gsc	method	getspeedmph	14	CMD_VEH_GetSpeedMPH	0054edd0	004a3550	layout		
+gsc	method	iprintlnbold	14	iclientprintlnbold	0082c120	007d9880	helper	same	Own body and Scr_MakeGameMessage are identical (SP 0x007D9880, 0x0058CD10) and the port matches; below them only the known Scr_ConstructMessageString differences.
+gsc	function	radiusdamage	14	GScr_RadiusDamage	00845ec0	007fb2f0	helper	fixed	as the method (SP 0x007FB0F0)
+gsc	method	setspeed	14	CMD_VEH_SetSpeed	0056ad50	005b5a50	layout		
+gsc	function	settimescale	14	GScr_SetTimeScale	0084c400	007f26f0	code	fixed	SP 0x007F26F0 takes one parameter and sets com_timescale unless more than one client is connected; the port now does, and tells a dedicated server's client through MP's configstring. Only reached if kill_slowmo_time is set or with the slowmo cheat
+gsc	method	setvisibletoall	14	ScrCmd_SetVisibleToAll	0083e650	007f2300	number	same	Same: SP 0x007F2300 zeroes the entity's client mask (+0xe0 in SP's gentity, +0xe4 in MP's), as the port's r.clientMask[0] = 0.
+csc	cfunction	cos	13	CScr_cos	007e7b20	00786960	same		
+csc	cfunction	getweaponmodel	13	CScr_GetWeaponModel	007e89e0	007877e0	helper	same	SP 0x007877E0 is MP's code (model index clamp, world or view model name, "" for an unknown weapon), and the client lookup registers nothing; the port's CScr_GetWeaponModel does the same.
+gsc	method	disableoffhandweapons	13	PlayerCmd_DisableOffhandWeapons	0082d190	007d8dc0	layout		
+gsc	method	enableoffhandweapons	13	PlayerCmd_EnableOffhandWeapons	0082d200	007d8e30	layout		
+gsc	method	maymovetopoint	13	ActorCmd_MayMoveToPoint	008f98f0	007ceae0	code	differs	SP 0x007CEAE0 also returns 0 across a movement-only suppression plane (0x007CB080). SP records one only for a teammate's shot at an actor that doesn't ignore suppression (0x00407870); zombies and dogs ignore it, so no zombie map reaches it.
+gsc	method	playsoundtoplayer	13	ScrCmd_PlaySoundToPlayer	0083fd50	007f4660	helper	same	Body equal; SP's G_EntPlaySound (0x00534A90) sets no broadcast bit and has a notify tail, both already in the port's G_PlaySoundAlias on a zombie map (g_utils_mp.cpp:2380-2390).
+gsc	method	setgoalnode	13	ActorCmd_SetGoalNode	008f8820	007cd670	helper	same	SP 0x007CD670 is MP's code with SP offsets (node, no-links print, script goal at the node with zero angles); the port's ActorCmd_SetGoalNode does the same.
+gsc	method	setmovespeedscale	13	ScrCmd_SetMoveSpeedScale	0083dc20	007f2690	number	same	Same code but for offsets: a player's session move speed multiplier is set from parameter 0 (SP 0x007F2690, client+0x1AD4; the port's sess.moveSpeedScaleMultiplier).
+gsc	method	allowjump	12	PlayerCmd_AllowJump	006bd3f0	00482e30	layout		
+gsc	method	allowspectateteam	12	PlayerCmd_AllowSpectateTeam	0082d5c0	007d9e10	code	same	SP 0x007D9E10 differs in numbering only: freelook is bit 0x40 (SP asks for team 6, SP 0x0068D09E), 0x10 here (TEAM_NUM_TEAMS 4). The port also takes "localplayers": a bit nothing reads, never passed.
+gsc	method	enableinvulnerability	12	PlayerCmd_EnableInvulnerability	0082e1a0	007d92b0	layout		
+gsc	method	isfiringturret	12	GScr_IsFiringTurret	008457f0	007f3fa0	layout		
+csc	cmethod	islocalplayer	11	CScrCmd_IsLocalPlayer	007ec6b0	0078b560	helper	same	Same: SP's CG_IsLocalPlayer (0x00667EF0) only adds a null check of the client globals pointer before the same test of the next snapshot's client number; the port has that test.
+csc	cfunction	playloopsound	11	CScr_PlayLoopSound	007e6960	007857a0	helper	same	SP 0x007857A0 equals MP with SP offsets: the fake entity gets the loop id, fade and number 1024+id, the sound plays through CG_PlaySoundWithHandle and its handle is returned. The port matches.
+csc	cfunction	soundplaying	11	CScr_SoundPlaying	007e7250	00786090	same		
+gsc	method	damageconetrace	11	GScr_DamageConeTrace	008461e0	007fb500	helper	fixed	For a target that is no sentient, SP's CanDamage (SP 0x005394D0) tests from G_EntityCentroid, the bounds' centre turned with it, with no missile shortcut; g_combat_mp.cpp's CanDamage_SP does now (radius damage too).
+gsc	function	getcorpsearray	11	GScr_GetCorpseArray	0083cd40	007f0d60	number	fixed	SP 0x007F0D60 returns every in-use actor or vehicle corpse; the port's SP branch now does (MP: linked actor and player corpses). Zombie maps make no player or vehicle corpses
+gsc	method	getweaponammostock	11	PlayerCmd_GetWeaponAmmoStock	0082bf30	007d81c0	code	fixed	SP 0x007D8229 verifies the name, so "none" or an unknown name is a script error and the result is undefined. The port gave 0. No shipped call passes such a name.
+gsc	function	lengthsquared	11	Scr_LengthSquared	00844930	007f9400	same		
+gsc	method	localtoworldcoords	11	GScr_LocalToWorldCoords	00849680	00803540	layout		
+gsc	method	getattachmodelname	10	ScrCmd_GetAttachModelName	0083e030	007f1cb0	number	same	SP 0x007F1CB0 is MP's code; it takes an index up to 30 where the port takes up to 18 (the known 31 against 19 attached models).
+gsc	method	getattachsize	10	ScrCmd_GetAttachSize	0083dfd0	007f1c50	number	same	Same loop; SP 0x007F1C50 counts up to 31 attached models where the port counts up to 19, its entity's capacity: the known attach limit, and nothing else differs.
+gsc	method	melee	10	ActorCmd_Melee	008f69d0	007c9cf0	helper	fixed	SP's Actor_Melee aims the swing at the enemy's eye (SP 0x005846D0 calls 0x004FBE10); MP's at the lower third-person eye
+gsc	method	setvelocity	10	PlayerCmd_SetVelocity	0082a4b0	007d66a0	layout		
+gsc	function	soundexists	10	ScrCmd_SoundExists	0083f8b0	007f45a0	same		
+gsc	function	weapontype	10	GScr_WeaponType	00842ef0	007fc5c0	code	same	The port's zombies branch matches SP 0x007FC5C0: "none" for an unknown weapon, else the weapon type's name, from the same eight-name table in both exes.
+csc	cfunction	distance	9	CScr_Distance	007e5720	00784510	same		
+csc	cmethod	hide	9	CScr_Hide	005be5e0	0059e860	number	same	SP 0x0059E860 is MP's code with SP's centity sizes: the hidden bit (0x20) set in the entity's or fake entity's eFlags. The port's CScr_Hide does the same through CG_GetEntity.
+csc	cmethod	setanim	9	CScr_SetAnim	007ebc60	0078aae0	helper	fixed	SP has no player/actor check: on a server entity it refuses an anim that isn't a client node (SP 0x0078A770), as clearanim does. The port does that now on an SP level. Scripts call it on client entities only (fake players, fxanims), so neither check is reached.
+csc	cfunction	stopsound	9	CScr_StopSound	0069ea80	005fda20	same		
+gsc	function	acos	9	GScr_acos	00844130	007f8ba0	same		
+gsc	method	getnegotiationstartnode	9	ScrCmd_GetNegotiationStartNode	008f8620	007cd470	number	same	SP 0x007CD470 is MP's code with SP offsets (path at actor+0x15BC, start index +0x386 into it); the port returns pts[start].iNodeNum's node, as both exes do.
+gsc	method	getweaponslist	9	PlayerCmd_GetWeaponsList	005332d0	004d5cc0	code	same	SP 0x004D5CC0 lists every held weapon, alternate modes too; the port's zombie branch already drops MP's alt-mode filter. Max Ammo's givemaxammo loop reaches it.
+gsc	function	min	9	GScr_min	00844200	007f8d90	same		
+gsc	method	pushplayer	9	ActorCmd_PushPlayer	008f87c0	007cd610	number	same	SP 0x007CD610 sets or clears bit 0x2000000 of the actor's trace mask, as MP does, at another offset. The port matches.
+gsc	method	setdepthoffield	9	GScr_SetDepthOfField	00849250	00802eb0	code	same	SP has MP's checks but the near/far blur ranges (SP 0x00802EB0), which the front end's set_default_dof breaks; the port skips those on an SP level, and the zeroing, far start error and six fields match.
+gsc	function	setvolfog	9	Scr_SetVolumetricFog	008480e0	007feae0	code	same	Own body is SP's (SP 0x007FEAE0). SP's G_setfog (0x00460040) scales the fog's opaque distance by 0.828, but only when the height density is 1, which no zombie map's half height gives.
+gsc	method	spawn	9	PlayerCmd_spawn	0082c190	007d9780	code	fixed	Own body is SP's (SP 0x007D9780; MP's match record is compiled out). Under it, the port's ClientSpawn now does as SP's (SP 0x00480170): no EF_TELEPORT toggle, the angles' roll and the command's buttons 8/9 kept. Left: SP turns the health shield on, which nothing reads here (EnableHealthShield).
+gsc	method	startfiring	9	GScr_StartFiring	00840950	007f5710	layout		
+gsc	method	stopfiring	9	GScr_StopFiring	008409c0	007f5780	layout		
+csc	cfunction	abs	8	CScr_abs	007e7d00	00786b40	same		
+csc	cfunction	bullettrace	8	CScr_BulletTrace	007ed780	0078c520	helper	same	SP 0x0078C520 is MP's but for the mask without characters, 0x802833 against 0x806833: SP's 0x4000 is its characters' contents (SP 0x0040C2CD), 0x8000 here, which both clear. The other differing helpers are deep in the trace.
+csc	cfunction	getcurrentweapon	8	CScr_GetCurrentWeapon	007ee9c0	0057feb0	code	same	SP 0x0057FEB0 reads the predicted player state's weapon and gives "none" for weapon 0, which is weapon 0's name here anyway. Only the wrong-parameter message's text differs.
+csc	cfunction	getlocalplayer	8	CScr_GetLocalPlayer	004a0bf0	0058dda0	number	same	SP 0x0058DDA0 equals MP with SP offsets: local client 0 or a script error, then the predicted player entity (CL_LocalClient_IsActive is true in both). The port does the same.
+csc	cmethod	getspeed	8	CScrCmd_GetSpeed	007e8d20	00787b00	helper	same	MP's code with SP offsets (SP 0x00787B00): a vehicle's speed, the local player's predicted velocity, else the snapshot trajectories' distance per second. The helper change is trajectory type 15, already in the port.
+csc	cmethod	map_material	8	CScr_Map_Material	007ec990	0078b750	helper	same	SP 0x0078B750 equals MP but for cg offsets: exactly 2 params, index 0-63, Material_Register(name, 0) into the map. The port does the same; helpers differ only in the asset database below.
+csc	cfunction	max	8	CScr_max	007e7d80	00786bc0	same		
+csc	cmethod	rotatepitch	8	CScrCmd_RotatePitch	00555a20	0055c290	helper	same	SP 0x0055C290 -> 0x00516390 is MP's code with SP offsets (fake flag 2, command times, mover rotate). Below it only trajectory type 15 (in the port) and memory-tree/va internals differ.
+csc	cfunction	setdvar	8	CScr_SetDvar	007e6190	00784f80	code	same	SP 0x00784F80 refuses a dvar without the script flag (0x4000), as MP does. Its extra branch sets a menu-writable (0x800) dvar only from menu_*/frontend levels, so on a zombie map only the error's text differs.
+gsc	method	cleartargetentity	8	GScr_ClearTargetEntity	00840f60	007f5da0	helper	same	Same body (SP 0x007F5DA0): a non-turret is a script error, then the manual target is cleared; the flagged helper, EntHandle::setEnt, differs only by the entity size it divides by.
+gsc	method	detachall	8	ScrCmd_detachAll	0083df90	007f1c10	helper	same	SP 0x007F1C10 and G_EntDetachAll (0x00517340) are MP's code with SP offsets; only the attachment slots differ (31 against the port's 19, known), and G_DObjUpdate as setmodel's.
+gsc	method	disableinvulnerability	8	PlayerCmd_DisableInvulnerability	0082e210	007d9320	layout		
+gsc	method	getammocount	8	GScr_GetAmmoCount	0083cf70	007fc3a0	code	fixed	SP verifies the name (SP 0x007FC3A0, 0x004FAAF0): "none" or an unknown weapon is a script error, where the port answered 0. The shipped calls pass a bought weapon's name.
+gsc	function	getnorthyaw	8	GScr_GetNorthYaw	00846d60	007fce40	helper	same	SP 0x007FCE40 reads the north yaw configstring as MP does (index 0x5EB there, 0x60C here, worldspawn sets it in both); only SV_GetConfigstring under it differs.
+gsc	method	isingoal	8	ActorCmd_IsInGoal	008f8c70	007cdac0	helper	same	SP 0x007CDAC0 is MP's code; in its helper, SV_EntityContact (SP 0x0059A900) differs only in reading svFlags as a word. The port matches.
+gsc	method	isswitchingweapons	8	PlayerCmd_IsSwitchingWeapons	0082a230	007d7bd0	layout		
+gsc	method	isthrowinggrenade	8	PlayerCmd_IsThrowingGrenade	0082a2d0	007d7ab0	layout		
+gsc	function	max	8	GScr_max	00844260	007f8df0	same		
+gsc	method	physicslaunch	8	ScriptEntCmd_PhysicsLaunch	00475f20	004aa9e0	helper	same	Same code in both exes and the port (SP 0x004AA9E0). The helper that differs is BG_EvaluateTrajectory's SP-only type 15, which the port already has.
+gsc	method	resumespeed	8	CMD_VEH_ResumeSpeed	0047a680	004e18e0	helper	same	Own body the same in both exes and in the port (SP 0x004E18E0). The differing helper is NitrousVehicle::get_max_speed: SP 0x00454170 has no boost multiplier. No zombie vehicle is nitrous. Reached: minecart, crystal, ziplines, _vehicle's node waits.
+gsc	method	setpulsefx	8	HECmd_SetPulseFX	00832ff0	007df030	code	fixed	SP takes the pulse sound ID from the first client's counter, whoever the element is for (SP 0x007DF132). The port took the counter of the element's own player. Only the numbering of the IDs changes.
+gsc	method	setruntopos	8	ActorCmd_SetOverrideRunToPos	008f8d00	007cdb50	number	same	SP 0x007CDB50 is MP's with SP offsets: it notifies goal_changed for a new position or when none was set, then stores it. The port matches.
+gsc	function	sqrt	8	GScr_sqrt	00844360	007f8ef0	same		
+csc	cfunction	deletefakeent	7	CScr_DeleteFakeEnt	007e4ec0	00783cb0	helper	same	Same body (SP 0x00783CB0). SP's CG_Free (0x00489D30) also clears one byte before zeroing the whole entity, which changes nothing. A fake entity has no script object, so CG_ShutdownEntity's notify difference can't reach it.
+csc	cfunction	getsystemtime	7	CScr_GetSystemTime	00412980	00509a00	helper	same	Identical body (SP 0x00509A00): local time unless the one parameter is true, hour/minute/second as a vector. Helpers differ only in the VM's error paths; the port does the same.
+csc	cfunction	length	7	CScr_Length	007e5890	00784680	same		
+csc	cfunction	localclientactive	7	CScr_LocalClientActive	007e8640	00787450	same		
+csc	cfunction	playviewmodelfx	7	CScr_PlayViewmodelFX	007ee260	008945d0	helper	fixed	Neither exe checks the bone (SP 0x008945D0): CG_PlayBoltedEffect plays on the view model with no bone. The port raised a script error when the view model lacked the tag; on an SP level no longer. Reachable from the thundergun power-cell loop, which checks only the current weapon.
+csc	cmethod	rotateyaw	7	CScrCmd_RotateYaw	005d0de0	005a60d0	helper	same	SP 0x005A60D0 calls the rotate-axis helper (SP 0x00516390, MP's code with SP offsets) with axis 1; the port's CScriptEnt_RotateAxis matches. The differing helper is trajectory type 15, already in the port.
+csc	cfunction	setsoundvolume	7	CScr_SetSoundVolume	007e7290	007860d0	same		
+csc	cmethod	useanimtree	7	CScr_UseAnimTree	007eab70	007899d0	code	fixed	SP takes client entities only ("UseAnimTree: Entity is a server-based entity.") and has no second parameter: a model-less entity is a script error (SP 0x007899D0). MP refuses players and actors instead. The port does SP's on an SP level. Scripts call it on client entities only.
+gsc	function	absangleclamp180	7	Scr_AbsAngleClamp180	00844ef0	007f99e0	same		
+gsc	method	calcweaponoptions	7	PlayerCmd_calcWeaponOptions	00829740	007d6170	code	same	The port's zombie branch is SP's (SP 0x007D6170): 1 to 4 plain ints (camo, lens, reticle, reticle color) plus the player bits, with no custom-class form. Pack-a-Punch's camo reaches it.
+gsc	function	createdynentandlaunch	7	GScr_CreateDynEntAndLaunch	005f7e40	005182f0	code	fixed	SP reads and sends a 7th, gore parameter (SP 0x005182F0); its client skips a marked piece under German alone (SP 0x0064D517). The port sends it in the event's eventParm and its client skips as SP's. SP's G_TempEntity keeps at most 4 such events alive while a remote client is connected (SP 0x00456E70); the port now too.
+gsc	function	getallnodes	7	Scr_GetAllNodes	005ce6b0	0043ce80	same		
+gsc	method	getattachtagname	7	ScrCmd_GetAttachTagName	0083e0b0	007f1d30	layout		
+gsc	function	getnodearray	7	Scr_GetNodeArray	005344e0	00594bb0	same		
+gsc	function	incrementcounter	7	GScr_IncrementCounter	0084f7f0	00804bd0	code	differs	SP 0x00804BD0 looks the counter up and counts it in any game; the port only on a ranked server, as MP. Kept: without Live no counter is set up here, and the lookup would only log errors as each game ends.
+gsc	method	movegravity	7	ScriptEntCmd_GravityMove	004b79d0	0067eed0	helper	same	Own body and ScriptMover_GravityMove are MP's code with SP offsets (SP 0x0067EED0, 0x00809240). The helpers that differ are trajectory type 15 (in the port) and SV_LinkEntity's known link mask.
+gsc	method	shootturret	7	GScr_ShootTurret	00840a30	007f57f0	helper	same	Own body same (SP 0x007F57F0); SP's turret_shoot_internal (0x00819C70) has Fire_Lead (0x00819970) aim an unmanned turret's shot at its target, as the port's Fire_Lead now does (turret_AimShot_SP): Kino's and Ascension's auto-turrets.
+csc	cmethod	rotateto	6	CScrCmd_RotateTo	0047e690	0068fb20	helper	same	SP 0x0068FB20 equals MP with SP offsets (fake entity flag 2, per-axis AngleNormalize180, CScriptMover_Rotate). The port does the same; the differing helper is trajectory type 15, in the port.
+csc	cmethod	set_overlay_enabled	6	CScr_Set_Overlay_Enabled	007ed010	0078bdd0	number	same	SP 0x0078BDD0 is MP's code with the cg offset: exactly 2 params, overlay 0-2 (the usage text says 0-3), stores enable != 0. The port does the same.
+csc	cmethod	set_overlay_material	6	CScr_Set_Overlay_Material	007ecde0	0078bba0	number	same	SP 0x0078BBA0 equals MP but for cg offsets: 3 params, overlay 0-2, material 0-63, sort 0-2, an error when no material is mapped. The port does the same.
+csc	cmethod	show	6	CScr_Show	00650dc0	00520500	number	same	Same code in both exes (SP 0x00520500): clears eFlags 0x20 on a client or server entity. The port does the same.
+csc	cmethod	stoprumble	6	NULLSUB2	0048f620	00651a30	same		
+gsc	method	adsbuttonpressed	6	PlayerCmd_adsButtonPressed	005de250	00436940	layout		
+gsc	function	exitlevel	6	GScr_ExitLevel	00849f40	007fabe0	helper	same	Own body is SP's (SP 0x007FABE0) and ExitLevel already has SP's zombie-map behaviour. SP's SV_MatchEnd (0x006015E0) keeps the party's last-round results and an end reason for retail's lobby, which a room's lobby does without.
+gsc	function	float	6	GScr_CastFloat	00844410	007f8ce0	same		
+gsc	method	getvelocity	6	ScrCmd_GetVelocity	00840610	007d6740	code	fixed	SP's is a player method alone (SP 0x007D6740): a script error for any other entity
+gsc	method	givestartammo	6	PlayerCmd_giveStartAmmo	0069e970	005ffc10	code	same	SP 0x005FFC10 verifies the name and calls G_InitializeAmmo (SP 0x007D6010) with hadWeapon 0. The port already does both on a zombie map.
+gsc	method	issplitscreen	6	PlayerCmd_IsSplitscreen	0082a360	007d7210	layout		
+gsc	method	maketurretunusable	6	GScr_MakeTurretUnusable	008411f0	007f6000	layout		
+gsc	method	moveovertime	6	HECmd_MoveOverTime	00832f00	007def30	number	fixed	Both exes round the milliseconds to nearest (fadd 2^-30, fistp at SP 0x007DEFFA). The port truncated, at most 1 ms short. Fixed for MP and zombies.
+gsc	method	restoredefaultdroppitch	6	GScr_RestoreDefaultDropPitch	00845780	008039a0	helper	differs	Own body same; SP's turret_RestoreDefaultDropPitch (SP 0x004F5530) takes the pitch from tag_aim always, the port's from tag_aim_pitch when the model has it, which no zombie zone's does. Only _mgturret's AI gunner code calls it.
+gsc	method	setelectrified	6	GScr_SetElectrified	00845440	007fa5f0	helper	same	SP 0x007FA5F0 is MP's code: time check, client check, reliable command '(' with the time in ms; only SV_SendServerCommand under it differs (network layer).
+gsc	method	setforcenocull	6	ScrCmd_SetForceNoCull	0083e690	007f2340	layout		
+gsc	method	setspeedimmediate	6	CMD_VEH_SetSpeedImmediate	005af250	005bc130	code	fixed	SP sets the speed and velocity but not the body velocity that MP also sets (SP 0x005BC130); the port now skips it on an SP level. Reached: Moon's black egg and Shangri-La's crystal (SetSpeedImmediate(0)).
+gsc	method	setwaterdrops	6	GScr_SetWaterDrops	00845590	007fa260	helper	same	Same body (SP 0x007FA260): count check, invalid-client error, reliable '0 <count>' command to the player; the helper differs only by client size and the known broadcast-only code in SV_SendServerCommand.
+gsc	function	tablelookup	6	Scr_TableLookup	00848690	008046b0	helper	same	Own body, StringTable_GetAsset and StringTable_Lookup are the same code in both exes and the port (SP 0x008046B0); what differs is deeper, in DB_FindXAssetHeader and the file system, and is engine-wide.
+gsc	method	useby	6	ScrCmd_UseBy	0083f3a0	007f43a0	code	fixed	SP takes a player off the turret they use (active 2, as their use button) with no trigger notify or use call (SP 0x007F43A0); the port used it again. The pay turret script does so; no shipped map has one. Left: vehicle flag +0x33c
+csc	cmethod	attach	5	CScr_Attach	00667f60	00683470	number	same	SP 0x00683470 equals MP with SP offsets: two attachment slots, tag_origin by default, the failure's error on the server instance as in MP. The port does the same.
+csc	cmethod	isplayer	5	CScrCmd_IsPlayer	007ec610	0078b4c0	number	same	Same code (SP 0x0078B4C0): 1 when the entity's type is player (1). The port does the same.
+csc	cfunction	lerpfloat	5	CScr_LerpFloat	007e5cd0	00784ac0	same		
+csc	cfunction	precacherumble	5	CScr_PrecacheRumble	007e8770	00787430	same		
+csc	cmethod	setanimknob	5	CScr_SetAnimKnob	007eb390	0078a1e0	helper	differs	SP's shared body (SP 0x00789E50) raises "No model exists." for an entity with no client DObj (SP 0x0078A0FE); here, as MP, it returns quietly. Kept: the error would end zombies' face-anim threads wherever this DObj comes later than SP's.
+csc	cfunction	setsoundvolumerate	5	CScr_SetSoundVolumeRate	007e7390	007861d0	same		
+csc	cfunction	vectornormalize	5	CScr_VectorNormalize	007e5b20	00784910	same		
+csc	cfunction	vectortoangles	5	CScr_VectorToAngles	007e5be0	007849d0	same		
+gsc	method	allowpitchangle	5	ActorCmd_AllowPitchAngle_SP	0048f620	00444de0	code	differs	Reached (quads, monkeys). The server side is SP 0x00444DE0's (flag, both script errors, event 0xC9). SP's client keeps the flag (0x0064DB8B) and reads it when posing an actor (0x006829AC); the port's client drops EV_ALLOWPITCH.
+gsc	method	clearentitytarget	5	ActorCmd_ClearEntityTarget	008f9090	007cdee0	helper	fixed	SP 0x007CDEE0 is MP's with SP offsets; its Sentient_SetEnemy (SP 0x004BF0B0) refreshes the goal with SP's Actor_UpdateGoalPos (0x0040AAA0), as the port's now does. MP also sends the enemy's number to clients, which no client script reads.
+gsc	method	closemenu	5	PlayerCmd_CloseMenu	0082bae0	007d74b0	code	same	SP 0x007D74B0 sends the player the reliable command "u", as the port does. SP formats it with va, MP with a 64-byte buffer.
+gsc	method	enableweaponcycling	5	PlayerCmd_EnableWeaponCycling	0082d2e0	007d8f10	layout		
+gsc	method	getnegotiationendnode	5	ScrCmd_GetNegotiationEndNode	008f8690	007cd4e0	number	same	SP 0x007CD4E0 is MP's with SP offsets (pts[start - 1].iNodeNum); the port matches.
+gsc	method	meleebuttonpressed	5	PlayerCmd_meleeButtonPressed	004192c0	00495590	code	fixed	SP also gives 1 for the attack button while the weapon has a bayonet or is used as melee (SP 0x00495604, 0x004B58A0). The port checked the melee button alone. The ballistic knife and weapon-object pickups reach it.
+gsc	method	movey	5	ScriptEntCmd_MoveY	006112a0	00497c20	helper	same	ScriptEnt_MoveAxis(entref, 1) in both exes and the port (SP 0x00497C20), as movez. The helpers differ only by trajectory type 15 and the known link mask.
+gsc	function	objective_state	5	Scr_Objective_State	00841fa0	007f6d50	code	same	SP 0x007F6D50 keeps the state in the objective's configstring (0x142+index) and sends no "objectives updated" under zombiemode; here it goes in level.objectives, sent in the player state. "done" was already accepted (0x00538E70).
+gsc	function	pointonsegmentnearesttopoint	5	GScr_PointOnSegmentNearestToPoint	008445e0	007f9050	same		
+gsc	method	rotatevelocity	5	ScriptEntCmd_RotateVelocity	004e9fe0	004abdc0	helper	same	Own body and ScriptMover_RotateSpeed are MP's code with SP offsets (SP 0x004ABDC0, 0x00809350). The only helper that differs is SV_LinkEntity's known link mask.
+gsc	method	setentitytarget	5	ActorCmd_SetEntityTarget	008f8f70	007cddc0	helper	fixed	SP 0x007CDDC0 is MP's with SP offsets (threat clamped to 0..1, tag from a third parameter); its Sentient_SetEnemy refreshes the goal with SP's Actor_UpdateGoalPos (0x0040AAA0), as the port's now does.
+gsc	method	stoprumble	5	METHOD_NULLSUB	0048f620	00651a30	same		
+gsc	function	weaponfiretime	5	GScr_WeaponFireTime	00843410	007fc0f0	code	fixed	SP verifies the name (SP 0x007FC0F0, 0x004FAAF0): "none" or an unknown weapon is a script error, where the port answered 0; its callers are shooting-AI animscripts, which no zombie runs.
+csc	cfunction	anglestoright	4	CScr_AnglesToRight	007e5e90	00784c80	same		
+gsc	function	atan	4	GScr_atan	008441b0	007f8c20	same		
+gsc	method	attachpath	4	CMD_VEH_AttachPath	0051d970	00464c40	helper	same	Same as SP's (SP 0x00464C40) but for offsets, and the port's matches. The helpers that differ are generic: script VM, SV_LinkEntity's svFlags width, the bone matrix's tag cache. Reached: ziplines, crystal, _vehicle's getonpath.
+gsc	method	attackbuttonpressed	4	PlayerCmd_attackButtonPressed	0067a270	004fed40	layout		
+gsc	method	cameraactivate	4	PlayerCmd_CameraActivate	0082a650	007d6940	helper	same	Same code in both exes and the port (SP 0x007D6940): the reliable command ')' with the flag. The flagged helper is SV_SendServerCommand's broadcast-only code.
+gsc	function	ceil	4	GScr_ceil	00844330	007f8ec0	same		
+gsc	method	closeingamemenu	4	PlayerCmd_CloseInGameMenu	0082bb60	007d75d0	code	same	SP 0x007D75D0 sends the reliable command "L", as the port does. MP's one extra call is its copy-protection check.
+gsc	method	disableweaponcycling	4	PlayerCmd_DisableWeaponCycling	0082d270	007d8ea0	layout		
+gsc	function	floor	4	GScr_floor	008442c0	007f8e50	same		
+gsc	method	getlightintensity	4	GScr_GetLightIntensity	0084cef0	008055d0	layout		
+gsc	function	getpartname	4	GScr_GetPartName	0062c930	005e8d10	code	fixed	SP 0x005E8D10 raises a script error unless it gets exactly two parameters; the port read on. The death animscripts' hat-model calls pass two.
+gsc	method	getturrettarget	4	GScr_GetTurretTarget	00841270	007f6080	layout		
+gsc	method	givemaxammo	4	PlayerCmd_giveMaxAmmo	0044eae0	00435540	code	same	SP 0x00435540 verifies the name, then tops the stock up to BG_GetAmmoPlayerMax through Add_Ammo (SP 0x0042D6A0). The port does both, and its Add_Ammo has SP's shared-ammo branch. Max Ammo reaches it.
+gsc	method	hidepart	4	ScrCmd_hidepart	0083e1c0	007f1e90	layout		
+gsc	function	iprintlnbold	4	iprintlnbold	0083bf90	007ef7f0	helper	fixed	Own body and Scr_MakeGameMessage match (SP 0x007EF7F0, 0x0058CD10); Scr_ConstructMessageString is SP's on an SP level now (SP 0x0065CE20): bytes 0x07-0x0d, 0x1a, 0x1b and 0x80 up become dots.
+gsc	method	isragdoll	4	GScr_IsRagdoll	005eced0	0054f1c0	layout		
+gsc	method	movex	4	ScriptEntCmd_MoveX	0051cc90	00523d10	helper	same	ScriptEnt_MoveAxis(entref, 0) in both exes and the port (SP 0x00523D10), as movez.
+gsc	method	scaleovertime	4	HECmd_ScaleOverTime	00832dd0	007dee00	layout	fixed	Layout alone but for the time: both exes round the milliseconds (fadd 2^-30, fistp), as fadeovertime's; the port truncated. Fixed for MP and zombies.
+gsc	method	setburn	4	GScr_SetBurn	00845390	007fa540	helper	same	SP 0x007FA540 is MP's code: time check, client check, reliable command 'W' with the time in ms; only SV_SendServerCommand under it differs (network layer).
+gsc	method	setdefaultdroppitch	4	GScr_SetDefaultDropPitch	00843310	00803920	layout		
+gsc	method	setgoalentity	4	ActorCmd_SetGoalEntity	008f8980	007cd7d0	helper	same	SP 0x007CD7D0 is MP's with SP offsets; its EntHandle helper (SP 0x005F3C20) differs only in the entity size. The port matches.
+gsc	method	startpath	4	CMD_VEH_StartPath	00438470	00503ed0	helper	same	Same as SP's (SP 0x00503ED0) but for the nitrous start_path, whose helpers differ; no zombie vehicle is nitrous. Reached: ziplines, crystal, _vehicle's gopath.
+gsc	method	takeallweapons	4	PlayerCmd_takeAllWeapons	00404230	00436af0	code	same	SP 0x00436AF0 clears the weapon, then takes each held weapon with BG_TakePlayerWeapon (SP 0x00541DB0), which is MP's code except for the width of the weapon field. The port does the same.
+gsc	function	triggerfx	4	Scr_TriggerFX	00847860	007fd990	layout		
+gsc	function	weaponinventorytype	4	GScr_WeaponInventoryType	00842fb0	007fc660	helper	fixed	Own body (SP 0x007FC660) matches, name check included; the flagged helper was G_RegisterWeapon, which now registers SP's 16 world models as a level loads (SP 0x006339E0), not two.
+gsc	function	weaponissemiauto	4	GScr_WeaponIsSemiAuto	00842e70	007fc400	helper	fixed	Own body (SP 0x007FC400) matches the port; the flagged helper was G_RegisterWeapon, which now registers SP's 16 world models as a level loads (SP 0x006339E0), not two.
+csc	cmethod	clearanim	3	CScr_ClearAnim	007ead70	00789bb0	number	same	Same code but for offsets (SP 0x00789BB0): the entity's tree, an error for a non-client anim on a server entity, then XAnimClearTreeGoalWeights. The port does the same.
+csc	cfunction	isarray	3	CScr_IsArray	007e5070	00783e60	same		
+csc	cfunction	issplitscreenhost	3	CScr_IsSplitScreenHost	0049a0b0	00583d80	same		
+csc	cfunction	lengthsquared	3	CScr_LengthSquared	007e58f0	007846e0	same		
+csc	cfunction	playrumbleonposition	3	NULLSUB	0048f620	00651a30	same		
+csc	cmethod	rotateroll	3	CScrCmd_RotateRoll	0054bf00	00440b50	helper	same	As rotateyaw, axis 2 (SP 0x00440B50).
+csc	cfunction	setgroupsnapshot	3	CScr_SetGroupSnapshot	007e7550	00786390	same		
+csc	cfunction	setlevelfadesnapshot	3	CScr_SetLevelFadeSnapshot	007e7690	007864d0	same		
+csc	cmethod	setlightfovrange	3	CScr_SetLightFovRange	007e99f0	00788850	number	same	SP 0x00788850 is MP's code with SP offsets. With the port's existing zombies fix (cos of the half angle), the range checks, the clamps, the inner fov's default from the bsp light and the two stores all match SP.
+csc	cmethod	setlightintensity	3	CScr_SetLightIntensity	007e9560	007883c0	number	same	SP 0x007883C0 equals MP but for offsets: light entities only, a param error below -0.001, clamped at 0 into the light's intensity. The port does the same.
+csc	cfunction	stoploopsound	3	CScr_StopLoopSound	007e6a90	007858d0	layout		
+csc	cmethod	unlink	3	CScrCmd_Unlink	007ec910	0078cc50	code	fixed	SP has no fake-entity check (SP 0x0078CC50): it writes "no parent" into the entity state, which a server entity's next snapshot replaces. MP raises a script error. On an SP level the port now returns quietly. Scripts unlink client entities only.
+gsc	method	cleargoalyaw	3	CMD_VEH_ClearGoalYaw	00603740	00463080	number	same	Same code as SP's (SP 0x00463080) but for scr_vehicle offsets (0x1c less in SP); the port's is the same.
+gsc	method	depthinwater	3	GScr_DepthInWater	00845990	007fa750	helper	fixed	Own body same (SP 0x007FA750); SP's CM_GetWaterHeight (0x0041D370) traces for water brushes only while phys_buoyancy is on. The port now gates it the same: the server on the value the scripts last sent a player (setclientdvar(s)), as retail's host's dvar; a client on its own.
+gsc	method	fireweapon	3	CMD_VEH_FireWeapon	0067ed90	004c7640	code	differs	SP's (SP 0x004C7640) differs after the health and weapon checks: it marks the weapon used for an owning player, picks other barrels, and fires a plane along its angles. Not ported. Every zombie vehicle has no turret weapon, so both raise the same script error.
+gsc	method	geteyeapprox	3	ScrCmd_GetEyeApprox	0083f320	007f4200	code	fixed	SP 0x007F4200 takes a sentient only: a player's eye is origin + view height; an actor's is +11 when prone, else +0.9 of its hull height. The port gave origin + 40 for any entity. Shangri-La's monkeys aim at a player's eye.
+gsc	method	gethitenttype	3	ActorCmd_GetHitEntType	008f8290	007ccfc0	number	same	SP 0x007CCFC0 tests SP's obstacle flag 0x400 (set by disconnectpaths, SP 0x0044A14B); MP tests 0x4000000. The port tests its own obstacle flag, which its disconnectpaths sets. Same.
+gsc	function	getnotetracktimes	3	GScr_GetNotetrackTimes	0083d090	007f1450	same		
+gsc	function	getwaterheight	3	GScr_GetWaterHeight	0067c6a0	0059e960	helper	fixed	Own body same (SP 0x0059E960); as depthinwater, CM_GetWaterHeight counts water brushes only under phys_buoyancy (SP 0x0041D4EC), now in the port too. Shangri-La's napalm zombie calls it, on a map that turns it on.
+gsc	function	isvec	3	GScr_IsVec	0083c930	007eff10	same		
+gsc	method	jumpbuttonpressed	3	PlayerCmd_jumpButtonPressed	006a87e0	005a0d80	layout		
+gsc	function	logstring	3	FUNCTION_NULLSUB	0048f620	00651a30	same		
+gsc	method	maketurretusable	3	GScr_MakeTurretUsable	00841180	007f5f90	layout		
+gsc	function	precachevehicle	3	GScr_PrecacheVehicle	006412d0	006347b0	helper	same	Own body the same (SP 0x006347B0). Below it, SP falls back to "defaultvehicle" (MP "defaultvehicle_mp") and SP's G_LoadVehicle also loads after level start. Neither is reached: misc_freefall is precached, and the minecart type is a map entity's.
+gsc	method	reacquirestep	3	ActorCmd_ReacquireStep	008f6a50	007c9f60	helper	fixed	Reached (zombie_combat). SP 0x004DA1F0 looks through SP's eye and sight trace (0x007CF350, 0x007CF070: cheap-sight eye, sight blocked by effects); the port's MP versions now hand off to these. The suppression planes it avoids are recorded now (SP 0x00407870).
+gsc	method	sendfaceevent	3	ScrCmd_SendFaceEvent	00849bf0	00806910	code	fixed	SP 0x00806910 has no face_melee: it prints the invalid-face-state error and sends no event, where the port sent face event 6. No zombie script reaches it: the melee notify is a zombie's, and zombiemode gives zombies no face anims.
+gsc	method	setbrake	3	CMD_VEH_SetBrake	006b28c0	00436030	layout		
+gsc	method	setclock	3	HECmd_SetClock	00832be0	007deb20	helper	fixed	Both exes add 0.5 and round to nearest (fistp at SP 0x007DE8C5 and 0x007DE936); the port truncated. Fixed for MP and zombies; setclockup and settimer share the rounding.
+gsc	method	setcontents	3	ScrCmd_SetContents	008408f0	007f5480	helper	same	Same body (SP 0x007F5480); SV_LinkEntity's differing solid mask (SP 0x0069548F: 0x200C001, here 0x2008001) needs contents 0x4000 on a non-brush entity; scripts set 0 or a brush's own contents back.
+gsc	method	setflashbanged	3	ActorCmd_SetFlashBanged	008f9330	007ce0c0	helper	differs	SP 0x004837A0 also lifts the suppression the flashbanged actor put on its enemies (SP 0x00609970 -> 0x00595D70: their suppression planes, suppression_end). The port records no planes. No zombie suppresses anyone.
+gsc	method	setneargoalnotifydist	3	CMD_VEH_NearGoalNotifyDist	00501b40	00558450	number	same	Same code as SP's (SP 0x00558450) but for scr_vehicle offsets; the port's is the same.
+gsc	method	setturretteam	3	GScr_SetTurretTeam	00840fe0	007f5e20	code	fixed	SP 0x007F5E20 takes axis or allies only; "free" is a script error. SP writes no team bits in the entity state; they are kept here because this client reads a turret's team from them. Kino's and Ascension's turrets pass allies.
+gsc	method	setvehgoalpos	3	CMD_VEH_SetGoalPos	0056c460	0044be20	code	same	Same as SP's (SP 0x0044BE20) but for the nitrous goal speed (get_max_speed, SP 0x00454170); no zombie vehicle is nitrous. Only _vehicle's helicopter code calls it.
+gsc	method	setvisibletoplayer	3	ScrCmd_SetVisibleToPlayer	0083e550	007f21f0	code	fixed	SP hides the entity from everyone first, so it is that player's alone (SP 0x007F21F0). Left: SP takes the player's bit from ps.clientNum, which is the watched player's for a spectator
+gsc	method	showpart	3	ScrCmd_showpart	0083e330	007f2000	layout		
+gsc	method	starttanning	3	GScr_StartTanning	008454f0	007fe490	code	fixed	SP sets the entity state's eFlags2 0x200000 on any entity, a player's too (SP 0x007FE490); the port set a player's in its player state. Call of the Dead's death.gsc calls it on zombies alone, same in both.
+gsc	function	uploadstats	3	GScr_UploadStats	0084bae0	008052c0	code	fixed	SP 0x008052C0 reads no parameter and tells every connected client to upload unless fs_game is set (0x0063DF00); the port took a player parameter and ignored fs_game. The scripts call it with no parameters at game end.
+gsc	function	weaponisboltaction	3	GScr_WeaponIsBoltAction	00842eb0	007fc440	helper	fixed	Own body (SP 0x007FC440) matches, name check included; the flagged helper was G_RegisterWeapon, which now registers SP's 16 world models as a level loads (SP 0x006339E0).
+csc	cfunction	distance2d	2	CScr_Distance2D	007e57a0	00784590	same		
+csc	cfunction	getanimlength	2	CScr_GetAnimLength	004d3ab0	00490300	same		
+csc	cfunction	getlocalclientpos	2	CScr_GetLocalClientPos	007e79c0	00786800	number	same	SP 0x00786800 equals MP: local client 0 or an error, then the predicted player state's origin (+0x24 in both). The port does the same.
+csc	cfunction	getplaybacktime	2	CScr_GetPlaybackTime	007e74b0	007862f0	same		
+csc	cfunction	getsubstr	2	CScr_GetSubStr	006bd4d0	005a24c0	same		
+csc	cmethod	getthrottle	2	CScrCmd_GetThrottle	007e8200	00787040	code	same	SP 0x00787040 takes a vehicle or vehicle corpse; MP also takes a helicopter (type 12), which only MP's spawnhelicopter makes and no zombie map spawns. Then the nitrous throttle or the state's 16-bit throttle, as the port.
+csc	cmethod	isalive	2	CScrCmd_IsAlive	005a8870	004fbe40	code	same	SP 0x004FBE40 gives 1 for a player, actor, vehicle, vehicle corpse or plane and errors on others. MP's list adds the helicopter, a type SP doesn't have (no spawnhelicopter); the port is MP's.
+csc	cfunction	isfxplaying	2	CScr_IsFXPlaying	0062ab30	0056a8d0	number	same	Same code (SP 0x0056A8D0): 2 params, local client 0, whether the effect handle is still playing. The port does the same.
+csc	cfunction	isps3	2	CScr_PrecacheRumble	007e8770	00787430	same		
+csc	cfunction	issplitscreen	2	CScr_IsSplitScreen	006279c0	004c1900	same		
+csc	cmethod	istouching	2	CScrCmd_IsTouching	007edad0	0078c870	number	same	SP 0x0078C870 equals MP but for the centity bits of a client trigger and its radius (SP 0x4000/0x8000, here bIsTrigger/bIsTriggerRadius 0x8000/0x10000, set by cg_spawn to match). The port does the same.
+csc	cmethod	movez	2	CScrEntCmd_MoveZ	0048c450	006357f0	helper	same	SP 0x006357F0 -> 0x00699230 is MP's axis move with SP offsets (fake flag 1, command times, CScriptMover_Move 0x007893F0). The helper change is trajectory type 15, in the port.
+csc	cmethod	set_overlay_constant	2	CScr_Set_Overlay_Constant	007ecec0	0078bc80	number	same	SP 0x0078BC80 equals MP but for cg offsets: 3 params, overlay 0-2, constant 0-15, the float stored. The port does the same.
+csc	cfunction	sethealthsnapshot	2	CScr_SetHealthSnapshot	007e75f0	00786430	same		
+csc	cmethod	setlightcolor	2	CScr_SetLightColor	007e93d0	00788230	number	fixed	SP 0x00788230 equals MP: the vector packed into the light's color bytes, exponent kept. Both exes' packing (SP 0x004482B0) rounds each channel; the port truncated, a step darker, and now rounds (MP too). Reached from _lights.csc.
+csc	cmethod	setlightexponent	2	CScr_SetLightExponent	007e9d10	00788b70	number	same	SP 0x00788B70 equals MP: light entities only, exponent 0-100 or a param error, stored in the colour's fourth byte. The port does the same.
+csc	cmethod	setlightradius	2	CScr_SetLightRadius	007e96f0	00788550	number	same	SP 0x00788550 equals MP but for offsets: errors below 0 or above the bsp radius + 0.001, clamps to [0, bsp radius], stores the radius. The port does the same.
+csc	cfunction	setsoundcontext	2	CScr_SetSoundContext	007e6ec0	00785d00	same		
+csc	cfunction	soundlineemitter	2	CScr_SoundLineEmitter	007e6ff0	00785e30	same		
+csc	cfunction	soundloopemitter	2	CScr_SoundLoopEmitter	007e6f10	00785d50	same		
+csc	cfunction	spawnplane	2	CScr_SpawnPlane	007ed5c0	0078c380	code	fixed	SP reads the compass material and leaves it: no plane-on-radar flag, no material (SP 0x0078C380); MP's put the plane on the compass. Only the napalm airsupport callback calls it, and no zombie map triggers that.
+csc	cfunction	splitargs	2	CScr_SplitArgs	007e7a60	007868a0	helper	same	Same code (SP 0x007868A0): splits the string at spaces into an array. The differing callees are script-VM array internals and the CRT's strstr. The port does the same.
+csc	cfunction	tracepoint	2	CScr_TracePoint	007e8780	00787580	same		
+gsc	function	asin	2	GScr_asin	008440b0	007f8b20	same		
+gsc	method	camerasetlookat	2	PlayerCmd_CameraSetLookAt	0082a860	007d6b50	helper	same	Same code in both exes and the port (SP 0x007D6B50). The flagged helper is SV_SendServerCommand's broadcast-only code.
+gsc	method	camerasetposition	2	PlayerCmd_CameraSetPosition	0082a6e0	007d69d0	helper	same	Same code in both exes and the port (SP 0x007D69D0). The flagged helper is SV_SendServerCommand's broadcast-only code.
+gsc	method	clearenemy	2	ActorCmd_ClearEnemy	008f8eb0	007cdd00	code	fixed	SP 0x007CDD00 is MP's with SP offsets (a sentient is 0x8C bytes); its Sentient_SetEnemy refreshes the goal with SP's Actor_UpdateGoalPos (0x0040AAA0), as the port's now does.
+gsc	method	clearfixednodesafevolume	2	ActorCmd_ClearFixedNodeSafeVolume	008f8c20	007cda70	helper	same	SP 0x007CDA70 is MP's with SP offsets; the EntHandle helper differs only in the entity size. The port matches.
+gsc	method	cleartargetyaw	2	CMD_VEH_ClearTargetYaw	004b1b30	004f2880	number	same	Same code as SP's (SP 0x004F2880) but for scr_vehicle offsets; the port's is the same.
+gsc	method	clientclaimtrigger	2	GScr_ClientClaimTrigger	0084bed0	008043a0	code	same	SP 0x008043A0 is MP's code with SP offsets (four trigger classes; claims a trigger that is free or already the player's); only its error text names three classes.
+gsc	method	drivepath	2	CMD_VEH_DrivePath	005647f0	0060f1b0	helper	same	Same as SP's (SP 0x0060F1B0) but for the nitrous start_path. _vehicle calls it for a vehicle with drivepath set; no zombie map has one.
+gsc	method	enableusability	2	PlayerCmd_EnableUsability	0082ceb0	007d78e0	layout		
+gsc	method	freevehicle	2	CMD_VEH_FreeVehicle	0059fc70	005ee430	helper	differs	Own body the same (SP 0x005EE430); its flag is SP's cursor-hint bit, which the port's hint code sets itself. SP's G_FreeVehicle also stops the loop sound (SP 0x0080D610) and frees switch-node strings. Only _vehicle's vehicle death reaches it.
+gsc	method	getanglestolikelyenemypath	2	ActorCmd_GetAnglesToLikelyEnemyPath	008f7f50	007ccbc0	helper	fixed	SP 0x005A6600 returns at once for a team with no enemy team and does not skip the actor's script owner; MP's did both. Actor_GetAnglesToLikelyEnemyPath now follows SP on an SP level. No zombie reaches either.
+gsc	method	getcurrentoffhand	2	PlayerCmd_getCurrentOffhand	004c6b50	0059fe80	code	fixed	SP names the offhand whatever the session state (SP 0x0059FED2). The port gave "none" for a player who isn't playing. take_weapons in _utility.gsc calls it.
+gsc	method	getdstat	2	GScr_GetDStat	0084ad90	00805b50	code	differs	kept on purpose: SP reads any stats.ddl path of the player's profile (SP 0x00805B50); here the lobby keeps PlayerStatsList's stats alone (g_sp_stats.cpp), the one path a called script reads; others are a script error
+gsc	method	getfractionmaxammo	2	PlayerCmd_getFractionMaxAmmo	0052c2c0	0052e980	code	fixed	SP verifies the name and gives a clip-only weapon's clip over its clip size (SP 0x0052EA1B); the port gave stock over max ammo, 0 for one. award_grenades_for_survivors reads the lethal grenade's every round: a player kept 2, now 2 to 4.
+gsc	method	getspeed	2	CMD_VEH_GetSpeed	0060f2f0	00652970	layout		
+gsc	method	getvehicleowner	2	CMD_VEH_GetVehicleOwner	005187a0	0057a9b0	layout		
+gsc	method	giveachievement	2	GScr_GiveAchievement	0084d3c0	00805aa0	helper	same	SP 0x00805AA0 is MP's code: one parameter, a named achievement, a player, reliable command '8'; only SV_SendServerCommand under it differs.
+gsc	function	iprintln	2	iprintln	0083bf70	007ef7d0	helper	fixed	Own body and Scr_MakeGameMessage match (SP 0x007EF7D0, 0x0058CD10); Scr_ConstructMessageString is SP's on an SP level now (SP 0x0065CE20): bytes 0x07-0x0d, 0x1a, 0x1b and 0x80 up become dots.
+gsc	method	isknownenemyinradius	2	ActorCmd_IsKnownEnemyInRadius	008f9490	007ce360	helper	same	SP 0x007CE360 is MP's code; Actor_IsKnownEnemyInRegion (SP 0x0044FF30) differs only in registers and the number of sentients. The port matches.
+gsc	method	isknownenemyinvolume	2	ActorCmd_IsKnownEnemyInVolume	008f9520	007ce3f0	helper	same	SP 0x007CE3F0 is MP's code, with the same helper as isknownenemyinradius. The port matches.
+gsc	method	isstanceallowed	2	ActorCmd_IsStanceAllowed	008f7790	007cb870	number	same	SP 0x007CB870 is MP's with SP offsets (stance names, stances allowed by the path or claimed node, script error). The port matches.
+gsc	function	isturretfiring	2	GScr_IsTurretFiring	00843290	007fc960	code	same	SP 0x007FC960's last test reads the entity state's firing bit (s+0x70 & 4), MP's the turret's flags, whose bit 4 nothing sets here; turret_SetState keeps that bit with the state the second test reads, so the answers match. The port now reads SP's bit.
+gsc	method	itemweaponsetammo	2	ScrCmd_ItemWeaponSetAmmo	0084d470	007f3a10	code	same	SP's checks, alt index and stores (SP 0x007F3A10) match; its weapon is the item index mod 128, MP's mod 2048, each its own exe's item encoding; BG_GetClipSize is the same code.
+gsc	method	joltbody	2	CMD_VEH_JoltBody	00402f10	00520ce0	number	same	Same code as SP's (SP 0x00520CE0), VEH_JoltBody too, but for offsets; the port's is the same.
+gsc	method	nearnode	2	ActorCmd_NearNode	008f8e40	007cdc90	layout		
+gsc	function	physicsexplosioncylinder	2	Scr_PhysicsExplosionCylinder	00847cf0	00808070	helper	same	SP 0x00808070 is MP's code apart from the event number (0x4A there, 0x49 here as this client reads it); SP's G_TempEntity throttles only other events while a remote client is connected.
+gsc	function	playerphysicstrace	2	Scr_PlayerPhysicsTrace	00843d40	007f8700	number	same	Same code (SP 0x007F8700): a player capsule (-15,-15,0)-(15,15,70) traced with mask 0x820011, the end point returned; the port's G_TraceCapsule call matches.
+gsc	method	playrumblelooponentity	2	METHOD_NULLSUB	0048f620	00651a30	same		
+gsc	function	resettimeout	2	Scr_ResetTimeout	00525e90	00650a60	same		
+gsc	function	setculldist	2	Scr_SetCullDist	00848410	007ffaa0	helper	same	SP 0x007FFAA0 is MP's code: one float into configstring 7 in both; only SV_SetConfigstring under it differs (network layer).
+gsc	method	setgoalyaw	2	CMD_VEH_SetGoalYaw	00664eb0	004a9ff0	number	same	Same code as SP's (SP 0x004A9FF0) but for scr_vehicle offsets; the port's is the same.
+gsc	method	setnormalhealth	2	ScrCmd_SetNormalHealth	008401e0	007f4e10	code	same	The port's zombies branch is SP's (SP 0x007F4E10): error for <= 0, rounding, the dead warning, the max-health error and the clamp to 1.
+gsc	method	setowner	2	GScr_SetOwner	00467e60	006657f0	code	same	SP 0x006657F0 is MP's code in SP's numbering: it refuses a player or an actor (eType 0x10 there, 0x11 here) and puts the owner's index in the entity state's team byte, as here.
+gsc	method	setswitchnode	2	CMD_VEH_SetSwitchNode	005622d0	00538040	layout		
+gsc	method	settargetyaw	2	CMD_VEH_SetTargetYaw	0063e7f0	005f2ed0	number	same	Same code as SP's (SP 0x005F2ED0) but for scr_vehicle offsets; the port's is the same.
+gsc	method	stopshellshock	2	GScr_StopShellShock	008490b0	00802e30	number	same	Same code (SP 0x00802E30): no parameters, the three shellshock fields zeroed and pm_flags 0x10000 cleared, the bit the port's shellshock sets.
+gsc	function	vectorcross	2	Scr_VectorCross	00844ac0	007f9590	same		
+csc	cfunction	deactivatereverb	1	CScr_DeactivateReverb	007e7730	00786570	same		
+csc	cfunction	getdvarfloat	1	CScr_GetDvarFloat	007e64f0	00785330	same		
+csc	cfunction	getknownlength	1	CScr_GetKnownLength	007e74f0	00786330	same		
+csc	cmethod	getlightcolor	1	CScr_GetLightColor	007e92c0	00788120	number	same	SP 0x00788120 equals MP but for offsets: light entities only, the colour bytes / 255 as a vector. The port does the same.
+csc	cmethod	getlightexponent	1	CScr_GetLightExponent	007e9c60	00788ac0	number	same	Same code but for offsets (SP 0x00788AC0): the light's exponent byte (colorAndExp[3]). The port does the same.
+csc	cmethod	getlightfovinner	1	CScr_GetLightFovInner	007e9850	007886b0	number	same	SP 0x007886B0 reads the float cosHalfFovInner and gives 2*acos in degrees; the port's existing zombies line does the same.
+csc	cmethod	getlightfovouter	1	CScr_GetLightFovOuter	007e9920	00788780	number	same	SP 0x00788780 returns acos(cosHalfFovOuter) * 2 in degrees. The port's existing zombies fix reads the float as SP does.
+csc	cmethod	getlightintensity	1	CScr_GetLightIntensity	007e94b0	00788310	number	same	SP 0x00788310 equals MP but for offsets: light entities only, the float after the colour. The port reads the same offset (lerp.u+4, through the turret.gunAngles[1] alias).
+csc	cmethod	getlightradius	1	CScr_GetLightRadius	007e9640	007884a0	number	same	Same code but for offsets (SP 0x007884A0): the light's radius float. The port does the same.
+csc	cfunction	getlocalclientangles	1	CScr_GetLocalClientAngles	007e8030	00786e70	number	same	As getlocalclientpos, the view angles (+0x180 in both) (SP 0x00786E70).
+csc	cfunction	getlocalclienteyepos	1	CScr_GetLocalClientEyePos	007e7f80	00786dc0	number	same	Same code (SP 0x00786DC0): predicted origin plus view height, with the lean added (16, 20). The port does the same.
+csc	cfunction	getmaxlocalclients	1	CScr_GetMaxLocalClients	007e8630	00787440	same		
+csc	cmethod	getwheelsurface	1	CScrCmd_GetWheelSurface	00412c90	005c0cc0	code	same	SP 0x005C0CC0 takes a vehicle or vehicle corpse; MP's also the helicopter, a type SP doesn't have. Wheel names, surface name and the "none" fallback are the same; the port is MP's.
+csc	cfunction	iprintlnbold	1	CScr_IPrintLnBold	007e51b0	00783fa0	helper	same	Own body is the same (SP 0x00783FA0). SP's CG_BoldGameMessage (0x004E3510) passes its third argument in a different slot of the call below; iprintlnbold passes 0, so nothing changes.
+csc	cmethod	isplayingloopsound	1	CScr_IsPlayingLoopSound	007e6e20	00785c60	number	same	SP 0x00785C60 equals MP but for offsets: whether the entity's loop sound id is set. The port does the same.
+csc	cmethod	issplitscreenhost	1	CScrCmd_IsSplitScreenHost	007ec780	0078b630	helper	same	Same code (SP 0x0078B630): true when the entity is the local player and its client is primary. SP's CG_IsLocalPlayer only adds a null check. The port does the same.
+csc	cmethod	launchragdoll	1	CScr_LaunchRagdoll	007ed0a0	0078be60	helper	same	SP 0x0078BE60 equals MP: a zeroed entity state with the vector as trBase into CG_PhysLaunch. CG_CreateRagdollObject has SP's zombiemode gravity slot ported; its script-mover branch isn't reached (the flinger launches zombies).
+csc	cfunction	lerpvector	1	CScr_LerpVector	007e5d60	00784b50	same		
+csc	cmethod	makelight	1	CScrCmd_MakeLight	007e90f0	00787f50	number	fixed	SP 0x00787F50 is MP's code with SP offsets (the bsp light's color, exponent, radius and fovs into both states, angles, origin, type 10, hidden). Its color packing rounds; the port truncated, a step darker, and now rounds (MP too).
+csc	cfunction	min	1	CScr_min	007e7d20	00786b60	same		
+csc	cmethod	movegravity	1	CScrCmd_MoveGravity	007ea6d0	00789530	helper	same	SP 0x00789530 equals MP with SP offsets (NaN check, gravity trajectory 6, the 10000 duration factor in both). The port does the same; the differing helper is trajectory type 15, in the port.
+csc	cmethod	movex	1	CScrEntCmd_MoveX	004f6980	005d8570	helper	same	SP 0x005D8570 -> 0x00699230 is MP's axis move with SP offsets (fake flag 1, command times, CScriptMover_Move). The helper change is trajectory type 15, in the port.
+csc	cmethod	movey	1	CScrEntCmd_MoveY	00590950	00468bd0	helper	same	SP 0x00468BD0 calls the move-axis helper (SP 0x00699230, MP's code with SP offsets) with axis 1; the port's CScrEnt_MoveAxis matches.
+csc	cmethod	playrumblelooponentity	1	NULLSUB2	0048f620	00651a30	same		
+csc	cmethod	set_filter_pass_quads	1	CScr_Set_Filter_Pass_Quads	007ecc30	0078b9f0	number	same	SP 0x0078B9F0 equals MP but for the cg offset: exactly 3 params, filter 0-2, pass 0-16 (sic, both exes), quads 0-400, stored in a [3][16] table. The port does the same.
+csc	cfunction	setambientsnapshot	1	CScr_SetAmbientSnapshot	007e75a0	007863e0	same		
+csc	cmethod	setflaggedanimknobrestart	1	CScr_SetFlaggedAnimKnobRestart	007ebe40	0078acc0	helper	differs	As setanimknob: the same body (SP 0x0078ACC0 into 0x00789E50), whose "No model exists." error isn't ported.
+csc	cfunction	setreverb	1	CScr_SetReverb	007e7810	00786650	same		
+csc	cfunction	setsoundpitch	1	CScr_SetSoundPitch	007e7310	00786150	same		
+csc	cfunction	setsoundpitchrate	1	CScr_SetSoundPitchRate	007e7410	00786250	same		
+csc	cmethod	shellshock	1	CScrCmd_ShellShock	007ef960	00896810	code	fixed	SP 0x00896810 is MP's code except that it copies the configstring into a buffer. Both exes round the duration to the nearest ms; the port truncated and now rounds (MP too). Only _vehicle.csc calls it.
+csc	cfunction	soundstoplineemitter	1	CScr_SoundStopLineEmitter	007e7070	00785eb0	same		
+csc	cfunction	soundstoploopemitter	1	CScr_SoundStopLoopEmitter	007e6f80	00785dc0	same		
+csc	cfunction	tolower	1	CScr_ToLower	00470be0	00506db0	same		
+csc	cmethod	underwater	1	CScrCmd_UnderWater	007ec800	0078b6f0	helper	fixed	Own body is MP's (SP 0x0078B6F0). CM_GetWaterHeight counts the world's water brushes only while phys_buoyancy is on (SP 0x0041D4EC), now in the port too (the client's own dvar). Reached on each footstep; Kino, Five, Nacht, Verrückt and Der Riese leave it off.
+csc	cfunction	vectordot	1	CScr_VectorDot	007e5a20	00784810	same		
+gsc	method	actionslottwobuttonpressed	1	PlayerCmd_actionSlotTwoButtonPressed	0047ddd0	005ac9b0	number	same	Same code in both exes (SP 0x005AC9B0): bit 46 of either button word, as the port.
+gsc	method	calcpathlength	1	ScrCmd_CalcPathLength	008f8590	007cd3e0	helper	same	Reached (closest player by path, every map). SP 0x007CD3E0 is MP's code. SP's Actor_FindPath (0x005266A0) adds suppression planes, which it skips with ignoreSuppression 1, and is otherwise MP's. The port matches.
+gsc	method	canattackenemynode	1	ScrCmd_CanAttackEnemyNode	008f8480	007cd2d0	helper	same	SP 0x007CD2D0 is MP's code. Sentient_NearestNode differs in layout and in SP's 72-unit hull, which the port's Path_NearestNode already has. Same.
+gsc	method	clearalltextafterhudelem	1	HECmd_ClearAllTextAfterHudElem	00832030	007de2c0	code	same	Same code in both exes (SP 0x007DE2C0) except the localized-string configstring base (SP 0x1E2, MP and port 0x203). The port clears the same strings in its own numbering.
+gsc	method	cleargoalvolume	1	ActorCmd_ClearGoalVolume	008f8b10	007cd960	layout		
+gsc	method	clearlookatent	1	CMD_VEH_ClearLookAtEnt	005ec340	00455330	helper	same	Same as SP's (SP 0x00455330). EntHandle::setEnt differs only by the gentity size it divides by.
+gsc	method	clearturrettarget	1	CMD_VEH_ClearTurretTarget	0058ed90	006855c0	layout		
+gsc	function	clientsysregister	1	GScr_ClientSysRegister	0084d5b0	00804830	helper	same	SP 0x00804830 is MP's code: the first free or same-named of 8 client-system configstrings (0x5E1 there, 0x602 here) gets the name, -1 when full; only the configstring functions under it differ.
+gsc	function	clientsyssetstate	1	GScr_ClientSysSetState	0084d670	008048f0	code	same	SP sends "9 <index> <state>" (SP 0x008048F0) where MP wraps the state as an info string's "s" key; the port's server and client both use MP's form. Checks and '!' for spaces match.
+gsc	method	clientsyssetstate	1	PlayerCmd_ClientSysSetState	0082e370	007d6260	code	same	SP 0x007D6260 sends the state string as is. MP and the port send an info string "\s\<state>", which the port's client reads back, so the client script gets the same state except for a state containing \ or ;.
+gsc	method	disableaimassist	1	GScr_DisableAimAssist	0058be60	00547fa0	code	fixed	SP 0x00547FA0 clears the aim-assist flag on any entity; the port raised a script error for one without a brush model. Prototype's breakable windows call it on their autoaim entity.
+gsc	method	disableusability	1	PlayerCmd_DisableUsability	0082ce40	007d7870	layout		
+gsc	method	enableaimassist	1	GScr_EnableAimAssist	0051e540	00447b60	code	fixed	SP sets eFlags 0x800 on any entity (SP 0x00447B60); MP's brush-model-only script error is now skipped on an SP level. Nacht's breakables (_interactive_objects) call it.
+gsc	method	findreacquiredirectpath	1	ActorCmd_FindReacquireDirectPath	008f6bc0	007ca0d0	helper	fixed	Reached (tryRunningToEnemy). SP 0x005E2280 is MP's, but its path search (0x0045E160) avoids the suppression planes an actor records when shot at by its claimed node (0x00407870). The port now records them (Actor_SP_BulletSuppression) and lets them lapse (SP 0x005623D0); zombies ignore suppression, so theirs last until their next think, as SP's.
+gsc	method	findreacquirenode	1	ActorCmd_FindReacquireNode	008f6ab0	007c9fc0	helper	fixed	Reached (zombie_combat). SP 0x00634FB0 fills the reacquire list with the 10 best cover nodes in the goal (SP 0x004E8C20). MP's left it empty, so getreacquirenode never returned a node. The port now does SP's on an SP level.
+gsc	method	findreacquireproximatepath	1	ActorCmd_FindReacquireProximatePath	008f6c30	007ca140	helper	fixed	Reached (tryRunningToEnemy). SP 0x007CA140 is MP's, but its search (0x005CC4C0) avoids the suppression planes an actor records under fire at its claimed node (0x00407870). The port now records them and lets them lapse (SP 0x005623D0).
+gsc	method	finishactordamage	1	ActorCmd_finishActorDamage	008f9a90	007ce570	code	fixed	Reached. SP 0x007CE570 makes the killer the dying sentient's lastAttacker (0x007CE863); its AI_EV_DEATH passes that killer to the actors around it. The port had the last attacker that hurt it, or none. Left: the per-client kill tally (0x004C55D0).
+gsc	method	finishplayerdamage	1	PlayerCmd_finishPlayerDamage	0082e720	007da700	code	fixed	A bullet hit on a player now carries SP's surface 7, flesh (SP 0x007DAAC1; the port sent 0), and SP's vehicle-gunner and vehicle_death code is followed. Left: SP's health-shield consumer (SP 0x00634AB0), which _zombiemode turns off at every spawn.
+gsc	method	finishvehicledamage	1	CMD_VEH_finishVehicleDamage	005e86c0	0047b580	code	fixed	SP (SP 0x0047B580) takes the script's damage unscaled (it has no vehicle_damage_zone_* dvars), ejects no teammates, and gives die the pre-destructible damage. The port scaled by MP's zones (x1 to 2.25). Reached via Callback_VehicleDamage.
+gsc	method	flagenemyunattackable	1	ActorCmd_FlagEnemyUnattackable	008f6d80	007ca290	helper	same	SP 0x007CA290 is MP's; Actor_FlagEnemyUnattackable (SP 0x004D9DC0) differs only in offsets and sentient size. The port matches.
+gsc	method	fragbuttonpressed	1	PlayerCmd_fragButtonPressed	004e01d0	00603330	layout		
+gsc	method	getattachpos	1	CMD_VEH_GetAttachPos	006736f0	005be5a0	helper	same	Same as SP's (SP 0x005BE5A0) but for the physics struct's size (0x128 vs 0x10c); the differing helpers are generic. _vehicle calls it.
+gsc	method	getdeltaturnyaw	1	ActorCmd_GetDeltaTurnYaw	008f9650	007ce520	number	same	SP 0x007CE520 is MP's with SP offsets (the dog's delta turn yaw, SP 0x0057BD10). The port matches.
+gsc	method	getflashbangedstrength	1	ActorCmd_GetFlashBangedStrength	008f9440	007ce1d0	number	same	SP 0x007CE1D0 returns flashBangedStrength (actor+0x223C), as MP does at its own offset. The port matches.
+gsc	method	getgunneranimpitch	1	CMD_VEH_GetGunnerAnimPitch	004333e0	00625400	layout		
+gsc	method	getperfectinfo	1	ActorCmd_GetPerfectInfo	008f92a0	007ce030	helper	same	SP 0x007CE030 is MP's with SP offsets (both script errors, Actor_GetPerfectInfo). Called only from _debug.gsc. The port matches.
+gsc	method	getreacquirenode	1	ActorCmd_GetReacquireNode	008f6af0	007ca000	number	same	SP 0x007CA000 is MP's with SP offsets; the port matches. It now returns nodes, since findreacquirenode fills the list.
+gsc	function	getretrievableweapons	1	GScr_GetRetrievableWeapons	00843120	007f0ed0	same		
+gsc	method	getvehoccupants	1	CMD_VEH_GetOccupants	004b75f0	00574c30	number	same	Same code as SP's (SP 0x00574C30) but for the seat offsets and gentity size; the port's is the same.
+gsc	function	getwatcherweapons	1	GScr_GetWatcherWeapons	008430d0	007f0e80	same		
+gsc	function	getweaponfusetime	1	GScr_GetWeaponFuseTime	0084f3a0	007fc780	helper	fixed	Own body (SP 0x007FC780) matches the port; the flagged helper was G_RegisterWeapon, which now registers SP's 16 world models as a level loads (SP 0x006339E0), not two.
+gsc	method	isfiring	1	PlayerCmd_IsFiring	0082a0f0	007d7a00	layout		
+gsc	method	isinvehicle	1	PlayerCmd_IsInVehicle	0082b7b0	007d7380	layout		
+gsc	method	ismeleeing	1	PlayerCmd_IsMeleeing	0082a1a0	007d7b40	layout		
+gsc	method	isvehicleimmunetodamage	1	CMD_VEH_IsVehicleImmuneToDamage	0064d370	00642310	helper	same	Own body the same (SP 0x00642310). SP's G_IsVehicleImmune (0x00456380) has no case for mod 17, which MP lets through on a remote-control vehicle. Every zombie vehicle has remoteControl 0, so both say immune.
+gsc	method	isvehicleusable	1	CMD_VEH_IsVehicleUsable	00610cd0	00619c50	layout		
+gsc	function	isweapondetonationtimed	1	GScr_IsWeaponDetonationTimed	00843510	007fca20	helper	fixed	Own body (SP 0x007FCA20) matches: 0 for an unknown weapon, else timedDetonation; the flagged helper was G_RegisterWeapon, which now registers SP's 16 world models (SP 0x006339E0).
+gsc	function	lerpfloat	1	GScr_LerpFloat	008427f0	00804e30	same		
+gsc	function	log	1	GScr_log	00843fa0	007f8a10	same		
+gsc	function	magicbullet	1	GScr_MagicBullet	004b0370	0056f4a0	code	same	The port's zombiemode branch is SP 0x0056F4A0: spread from fHipSpreadStandMin, bullets with the attacker as weapon entity, gas, rockets for pistol/rocket/turret classes, no attacker in the fire event.
+gsc	function	makedvarserverinfo	1	GScr_MakeDvarServerInfo	00849fe0	007fac40	helper	same	Same code (SP 0x007FAC40) but MP adds dvar flag 0x400 (0x500/0x4500, SP 0x100/0x4100), its script-info bit, which nothing here reads (Dvar_ResetScriptInfo only clears it).
+gsc	method	makevehicleusable	1	CMD_VEH_MakeVehicleUsable	005efe70	005cc950	number	same	Same code as SP's (SP 0x005CC950), its helper too, but for offsets; the port's is the same.
+gsc	method	maymovefrompointtopoint	1	ActorCmd_MayMoveFromPointToPoint	008f99c0	007cebe0	number	same	SP 0x007CEBE0 is MP's with SP offsets and has no suppression-plane test. Its helper's 72-unit drop (SP 0x007CE940) is already in the port's MayMove_TraceCheck. Same.
+gsc	method	openmenu	1	PlayerCmd_OpenMenu	0082b960	007d70b0	code	same	SP 0x007D70B0: a connected player gets "t <menu index>" and 1, others get 0, as in the port. The menu configstring base differs (SP 0x9C7, MP 0x9F4), and the port uses MP's on both ends.
+gsc	method	placespawnpoint	1	GScr_PlaceSpawnPoint	00849960	00806680	number	same	SP 0x00806680 is MP's code; its mask 0x281C011 adds SP's actor bit 0x4000, which is 0x8000 here and is already in MP's 0x2818011.
+gsc	method	playerads	1	PlayerCmd_playerADS	004821f0	005ab360	layout		
+gsc	method	playsoundasmaster	1	ScrCmd_PlaySound	0083f960	007f45d0	code	same	SP binds it to playsound's function (SP 0x007F45D0), as the port does; the port's SP-level branch is that function's (see playsound).
+gsc	function	precacheheadicon	1	GScr_PrecacheHeadIcon	00842d20	007faa00	helper	same	SP 0x007FAA00 is MP's code: 15 head-icon configstrings (0xB87 there, 0xC1C here); a duplicate is skipped and a 16th is a script error; only the configstring functions under it differ.
+gsc	function	precachemenu	1	GScr_PrecacheMenu	00842b80	00803ca0	code	fixed	SP raises a script error once the level has started (SP 0x00803CA0); the port took a menu at any time. The scripts precache theirs as the level loads.
+gsc	function	precacheturret	1	GScr_PrecacheTurret	0083dbf0	007f1960	helper	fixed	Own body (SP 0x007F1960) matches the port; the flagged helper was G_RegisterWeapon, which now registers SP's 16 world models as a level loads (SP 0x006339E0), not two.
+gsc	method	reacquiremove	1	ActorCmd_ReacquireMove	008f6d10	007ca220	number	same	SP 0x007CA220 is MP's with SP offsets (Actor_MayReacquireMove, Actor_Exposed_StartReacquireMove). The port matches.
+gsc	function	reportmtu	1	FUNCTION_NULLSUB	0048f620	00651a30	same		
+gsc	method	setconvergencetime	1	GScr_SetConvergenceTime	00840db0	007f5bf0	layout		
+gsc	method	setdstat	1	GScr_SetDStat	0084b840	00805d80	code	differs	kept on purpose: SP writes any stats.ddl path of the player's profile (SP 0x00805D80); here the lobby keeps PlayerStatsList's stats alone (g_sp_stats.cpp), the one path the scripts write.
+gsc	function	setexpfog	1	Scr_SetExponentialFog	00847f50	007fe810	code	fixed	SP 0x007FE810 sets only the fog; MP's also sets g_fogColorReadOnly, g_fogStartDistReadOnly and g_fogHalfDistReadOnly, dvars SP lacks. Only _art.gsc's developer fog sliders read them.
+gsc	method	setfixednodesafevolume	1	ActorCmd_SetFixedNodeSafeVolume	008f8b50	007cd9a0	helper	same	SP 0x007CD9A0 is MP's with SP offsets (stores the volume and its 2D radius squared). The port matches.
+gsc	method	setgoalvolume	1	ActorCmd_SetGoalVolume	008f89f0	007cd840	helper	same	SP 0x007CD840 is MP's; SV_EntityContact differs only in reading svFlags as a word. Same script errors; the port matches.
+gsc	method	sethoverparams	1	CMD_VEH_SetHoverParams	004212c0	0062d340	number	same	Same code as SP's (SP 0x0062D340) but for scr_vehicle offsets; the port's is the same.
+gsc	method	setlaststandprevweap	1	PlayerCmd_SetLastStandPrevWeap	0082f070	007db010	code	same	SP 0x007DB010 stores the weapon index as a byte, MP and the port as a short. The result is the same for indexes below 256.
+gsc	method	setlookatent	1	CMD_VEH_SetLookAtEnt	006832e0	005fe020	helper	same	Same code as SP's (SP 0x005FE020); EntHandle::setEnt differs only by the gentity size.
+gsc	function	setmapcenter	1	GScr_SetMapCenter	0084c1a0	00804640	helper	same	Same code (SP 0x00804640) and SV_SetMapCenter (truncated, configstring 13); only the exes' configstring setters differ underneath.
+gsc	function	setminimap	1	GScr_SetMiniMap	0084c450	00803dd0	code	same	SP 0x00803DD0 takes the north from level.compassNorth where MP re-reads the north-yaw configstring; worldspawn sets both from the same key. The map size, the check and the configstring are the same.
+gsc	method	setperk	1	PlayerCmd_SetPerk	0082ddf0	007d8ff0	code	same	The port's zombie branch is SP's (SP 0x007D8FF0): SP's 15 perk names, two bits each in the player state and the session, and an unknown name is a script error.
+gsc	method	setspawnweapon	1	PlayerCmd_setSpawnWeapon	0082e660	007da640	code	same	SP 0x007DA640: if the weapon is valid, it is set ready, marked ever-had (SP 0x00608C80) and sent with 'a'. The port does the same.
+gsc	method	settalktospecies	1	ActorCmd_SetTalkToSpecies	008f9590	007ce460	number	same	SP 0x007CE460 loops over its 4 species (human, dog, zombie, zombie_dog), MP over 1; the port has SP's table. Both exes read parameter 0 each time; the port matches.
+gsc	method	setteamfortrigger	1	GScr_SetTeamForTrigger	0084bbe0	008041c0	code	fixed	SP takes any entity whose classname begins with "trigger" (SP 0x008041C0), MP four classnames. The one call, the ballistic knife's trigger_radius_use, passes in both.
+gsc	method	setturretignoregoals	1	GScr_SetTurretIgnoreGoals	008410f0	007f5f00	layout		
+gsc	method	setturrettargetent	1	CMD_VEH_SetTurretTargetEnt	00490350	005a23c0	number	fixed	Own body the same but for the flag's number (SP 0x005A23C0). SP's G_FreeEntityRefs has every vehicle aiming at a freed target stop (SP 0x00685370); the port's now does on an SP level. No zombie vehicle has a turret.
+gsc	method	setwaitspeed	1	CMD_VEH_SetWaitSpeed	0063bc50	004dfbd0	number	same	Same code as SP's (SP 0x004DFBD0) but for scr_vehicle offsets; the port's is the same.
+gsc	function	stopallrumbles	1	FUNCTION_NULLSUB	0048f620	00651a30	same		
+gsc	method	suicide	1	PlayerCmd_Suicide	0082b680	007d98f0	code	fixed	Own body is SP's (SP 0x007D98F0). Under it the port now runs SP's player_die (SP 0x00482EC0, G_SP_PlayerDie in g_combat_mp.cpp). _swimming.gsc's drowning reaches it; _zombiemode_load loads _swimming on every map.
+gsc	method	throwbuttonpressed	1	PlayerCmd_throwButtonPressed	00440760	00466b20	layout		
+gsc	method	unsetperk	1	PlayerCmd_UnsetPerk	0082e050	007d9170	code	same	The port's zombie branch is SP's (SP 0x007D9170): both of the perk's bits cleared in the player state and the session.
+gsc	method	usereacquirenode	1	ActorCmd_UseReacquireNode	008f6b40	007ca050	helper	fixed	SP 0x00619D20 finds its path through SP 0x005F3580, which ignores bad places when badplaceawareness is 0 (zombies, dogs), and uses SP's sight trace. The port now uses both, and records the suppression planes (SP 0x00407870).
+gsc	function	weaponmaxammo	1	GScr_WeaponMaxAmmo	00843030	007fc6e0	helper	fixed	Own body (SP 0x007FC6E0) matches the port; the flagged helper was G_RegisterWeapon, which now registers SP's 16 world models as a level loads (SP 0x006339E0), not two.
+gsc	function	weaponmountable	1	GScr_WeaponIsMountable	00842f80	007fc480	helper	fixed	Own body (SP 0x007FC480) matches: no name check, mountableWeapon of the def; the flagged helper was G_RegisterWeapon, which now registers SP's 16 world models (SP 0x006339E0).
+gsc	function	weaponstartammo	1	GScr_WeaponStartAmmo	00842ff0	007fc6a0	helper	fixed	Own body (SP 0x007FC6A0) matches the port; the flagged helper was G_RegisterWeapon, which now registers SP's 16 world models as a level loads (SP 0x006339E0), not two.
